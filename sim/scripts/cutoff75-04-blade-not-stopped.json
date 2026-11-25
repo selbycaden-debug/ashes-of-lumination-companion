@@ -1,0 +1,205 @@
+{
+ "name": "cutoff75-04-blade-not-stopped",
+ "seed": 11183,
+ "note": "Test rule ON: the Shadow Blade can always take over. Tor dies with 4 living Lumen (threshold 4 of 6) and Mab alive, but the Blade takes the kill: no cutoff win; the Blade later kills Cal.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Ben"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Tor"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Bla",
+     "action": "inheritedKill",
+     "target": "Cal"
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  }
+ ],
+ "expect": [
+  {
+   "after": "execute",
+   "round": 2,
+   "winner": "",
+   "logIncludes": [
+    "Shadow Blade takeover is in effect"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 4,
+   "winner": "",
+   "dead": [
+    "Ann",
+    "Ben",
+    "Tor",
+    "Cal"
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Bla",
+   "role": "the-shadow-blade"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  }
+ ],
+ "testCutoff75": true,
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

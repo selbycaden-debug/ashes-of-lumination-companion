@@ -1,0 +1,84 @@
+{
+ "name": "rule1118b-01a-soulbound-required-10",
+ "seed": 11182,
+ "note": "Caden (Nov 18): \"Soulbound should be in every game with 10 or more players.\" A 10-player game with no pair shows the GM a required-Soulbound reminder.",
+ "steps": [
+  {
+   "op": "startRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "startRound",
+   "round": 1,
+   "remindersInclude": [
+    "Soulbound is required in every game with 10 or more players (Caden, Nov 18)"
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Rex",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Syn",
+   "role": "the-syndic"
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

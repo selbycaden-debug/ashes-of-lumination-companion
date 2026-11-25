@@ -1,0 +1,173 @@
+{
+ "name": "succ1118-04-paradox-own-kill",
+ "seed": 11184,
+ "note": "Caden (Nov 18 card): a Paradox turned Ashen \"inherit[s] their own kill each night. So potentially 2 deaths happen per night if the ashen tyrant is alive\"; \"The mind and others can't inherit the kill.\" Tor's AF1 kill on Pax triggers the flip (tails): Pax is Ashen. AF2: Tor kills Ann and Pax kills Ben (2 deaths). DA2: Tor is executed; no Red Scar/Mirebane/Echo Thief, so the game ends (Lumen win, Caden's Nov 18 card) with Mnd and Pax alive.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Pax"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall",
+   "flip": "tails"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    },
+    {
+     "player": "Pax",
+     "action": "kill",
+     "target": "Ben"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Tor"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "livingCount": 9,
+   "teamCounts": {
+    "Ashen": 3
+   },
+   "remindersInclude": [
+    "Converted Paradox: Pax has its own kill every Ash Fall"
+   ],
+   "results": {
+    "Pax": "You gain your own kill every Ash Fall, separate from The Ashen Tyrant's"
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 2,
+   "dead": [
+    "Ann",
+    "Ben"
+   ],
+   "livingCount": 7,
+   "winner": ""
+  },
+  {
+   "after": "execute",
+   "round": 2,
+   "winner": "lumen",
+   "livingNames": [
+    "Mnd",
+    "Pax",
+    "Cal",
+    "Dee",
+    "Eli",
+    "Fay"
+   ],
+   "logIncludes": [
+    "No eligible heir can take the Tyrant kill",
+    "Lumen victory: the Tyrant kill can't pass to anyone"
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mnd",
+   "role": "the-ashen-mind"
+  },
+  {
+   "name": "Pax",
+   "role": "the-luminary-paradox"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

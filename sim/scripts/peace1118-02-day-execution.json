@@ -1,0 +1,171 @@
+{
+ "name": "peace1118-02-day-execution",
+ "seed": 11185,
+ "note": "Tor executed at DA1 (day death). AF2 is the night of peace (Rex's kill paused); Rex kills Ben at AF3.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Tor"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Rex",
+     "action": "inheritedKill",
+     "target": "Ben"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Rex",
+     "action": "inheritedKill",
+     "target": "Ben"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  }
+ ],
+ "expect": [
+  {
+   "after": "execute",
+   "round": 1,
+   "winner": "",
+   "logIncludes": [
+    "no inherited Tyrant kill on Ash Fall 2",
+    "first kill on Ash Fall 3"
+   ],
+   "remindersInclude": [
+    "Rex (The Red Scar) kills from Ash Fall 3"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 2,
+   "livingCount": 8,
+   "logIncludes": [
+    "The inherited Tyrant kill is paused during the night of peace"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 3,
+   "dead": [
+    "Tor",
+    "Ben"
+   ],
+   "winner": ""
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Rex",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Gus",
+   "role": "the-foresight-elder"
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

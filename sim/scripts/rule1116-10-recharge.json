@@ -1,0 +1,204 @@
+{
+ "name": "rule1116-10-recharge",
+ "seed": 1116,
+ "note": "Caden ruling 2026-11-16 #10 (5-player rule): a used ability regains a use only after 5 more players have died since it was used. Sun shoots at L1 (1 death so far); the use comes back at the 6th death (DA3), not before; the old living-count threshold is gone (script rechargeAt 4 is ignored).",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Sun",
+   "role": "sunmark-shooter"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge",
+   "ashTouched": true
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Gus",
+   "role": "the-foresight-elder"
+  },
+  {
+   "name": "Hal",
+   "role": "the-lumen-guard"
+  },
+  {
+   "name": "Ivy",
+   "role": "the-silent-hand"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Sun",
+     "action": "shot",
+     "target": "Ben"
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Dee"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Eli"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Fay"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Gus"
+  },
+  {
+   "op": "nextRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveLumination",
+   "round": 1,
+   "charges": {
+    "Sun": 0
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 3,
+   "charges": {
+    "Sun": 0
+   },
+   "livingCount": 7
+  },
+  {
+   "after": "execute",
+   "round": 3,
+   "charges": {
+    "Sun": 1
+   },
+   "results": {
+    "Sun": "has 1 use again"
+   },
+   "logIncludes": [
+    "regained 1 use: 5 more players have died"
+   ]
+  }
+ ],
+ "rechargeAt": 4,
+ "atForce": [
+  {
+   "player": "Ben",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

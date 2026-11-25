@@ -1,0 +1,238 @@
+{
+ "name": "peace1118-05-paradox-kill-during-peace",
+ "seed": 11185,
+ "note": "Caden (Nov 18 card): the converted Paradox keeps its kill after the Tyrant dies; Caden (Nov 18 card, ~2:02 PM): \"Yes, the Paradox still kills\" during the night of peace. AF1 Tor hits Pax (tails: Ashen). AF2 Pax kills Ann; Tor (Soulbound) dies with her. AF3 = night of peace: Pax still kills Ben, Rex's inherited kill is paused. AF4: Pax kills Dee and Rex kills Cal.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Pax"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall",
+   "flip": "tails"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Pax",
+     "action": "kill",
+     "target": "Ann"
+    },
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Pax",
+     "action": "kill",
+     "target": "Ben"
+    },
+    {
+     "player": "Rex",
+     "action": "inheritedKill",
+     "target": "Cal"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Pax",
+     "action": "kill",
+     "target": "Dee"
+    },
+    {
+     "player": "Rex",
+     "action": "inheritedKill",
+     "target": "Cal"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "teamCounts": {
+    "Ashen": 3
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 2,
+   "dead": [
+    "Ann",
+    "Tor"
+   ],
+   "logIncludes": [
+    "no inherited Tyrant kill on Ash Fall 3"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 3,
+   "dead": [
+    "Ann",
+    "Tor",
+    "Ben"
+   ],
+   "livingCount": 8,
+   "logIncludes": [
+    "The inherited Tyrant kill is paused during the night of peace"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 4,
+   "dead": [
+    "Ann",
+    "Tor",
+    "Ben",
+    "Dee",
+    "Cal"
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant",
+   "soulbound": "Ann"
+  },
+  {
+   "name": "Rex",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "Pax",
+   "role": "the-luminary-paradox"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer",
+   "soulbound": "Tor"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Gus",
+   "role": "the-foresight-elder"
+  },
+  {
+   "name": "Hal",
+   "role": "the-vitality-overseer"
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

@@ -1,0 +1,313 @@
+{
+ "name": "rule1116-05-echo",
+ "seed": 1116,
+ "note": "Caden ruling 2026-11-16 #5: The Echo Thief can't copy Unaligned roles (Syndic) or The Ashen Mind (no Mind snapshot), and a copied executed Ashen Tyrant gives a one-time kill (used at AF5; no kill at AF6).",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Ech",
+   "role": "the-echo-thief"
+  },
+  {
+   "name": "Mnd",
+   "role": "the-ashen-mind"
+  },
+  {
+   "name": "Scr",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "Syn",
+   "role": "the-syndic"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Syn"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Mnd"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Tor"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": []
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Ech",
+     "action": "kill",
+     "target": "Ann"
+    },
+    {
+     "player": "Scr",
+     "action": "inheritedKill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Ech",
+     "action": "kill",
+     "target": "Ben"
+    },
+    {
+     "player": "Scr",
+     "action": "inheritedKill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  }
+ ],
+ "expect": [
+  {
+   "after": "execute",
+   "round": 1,
+   "results": {
+    "Ech": "can't be copied"
+   },
+   "resultForbids": {
+    "Ech": [
+     "You copy The Syndic"
+    ]
+   }
+  },
+  {
+   "after": "execute",
+   "round": 2,
+   "resultForbids": {
+    "Ech": [
+     "You copy The Ashen Mind"
+    ]
+   }
+  },
+  {
+   "after": "nextRound",
+   "round": 3,
+   "resultForbids": {
+    "Ech": [
+     "Start-of-round snapshot"
+    ]
+   },
+   "needsAshAction": {
+    "Ech": false
+   }
+  },
+  {
+   "after": "execute",
+   "round": 3,
+   "results": {
+    "Ech": "one-time kill"
+   }
+  },
+  {
+   "after": "nextRound",
+   "round": 4,
+   "needsAshAction": {
+    "Ech": false
+   }
+  },
+  {
+   "after": "nextRound",
+   "round": 5,
+   "needsAshAction": {
+    "Ech": true
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 5,
+   "dead": [
+    "Syn",
+    "Mnd",
+    "Tor",
+    "Ann"
+   ],
+   "logIncludes": [
+    "copied Tyrant kill"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 6,
+   "livingCount": 7,
+   "needsAshAction": {
+    "Ech": false
+   }
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

@@ -1,0 +1,230 @@
+{
+ "name": "rule1116-04-syndic",
+ "seed": 1116,
+ "note": "Caden ruling 2026-11-16 #4: a recruit gets a one-time shield used at night; the Syndic wins when every living player is the Syndic, a recruit, or Ashen. Ann's shield stops the AF2 kill, is gone at AF3; at AF4 only Syn, Ben (recruit) and Tor (Ashen) live, so the Syndic wins. Caden (Nov 17 card): living recruits win with the Syndic, dead ones do not.",
+ "players": [
+  {
+   "name": "Syn",
+   "role": "the-syndic"
+  },
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Syn",
+     "action": "invite",
+     "target": "Ann"
+    },
+    {
+     "player": "Syn",
+     "action": "invite",
+     "target": "Ben"
+    },
+    {
+     "player": "Ann",
+     "action": "answerInvite",
+     "accept": true
+    },
+    {
+     "player": "Ben",
+     "action": "answerInvite",
+     "accept": true
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Ann",
+     "action": "syndShield"
+    },
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Ann",
+     "action": "syndShield"
+    },
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Dee"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Eli"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  }
+ ],
+ "expect": [
+  {
+   "after": "lumination",
+   "round": 1,
+   "results": {
+    "Ann": "one-time shield"
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 2,
+   "dead": [],
+   "livingCount": 7,
+   "logIncludes": [
+    "Ann used their one-time syndicate shield"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 3,
+   "dead": [
+    "Cal",
+    "Ann"
+   ],
+   "winner": ""
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 4,
+   "winner": "syndic",
+   "livingNames": [
+    "Syn",
+    "Tor",
+    "Ben"
+   ],
+   "logIncludes": [
+    "The Syndic, one of its recruits, or Ashen (Caden)",
+    "The Syndic and its living recruits win; dead recruits and any Ashen recruit do not (Caden, Nov 17 card"
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

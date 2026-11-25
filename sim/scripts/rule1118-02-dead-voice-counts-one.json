@@ -1,0 +1,199 @@
+{
+ "name": "rule1118-02-dead-voice-counts-one",
+ "seed": 1118,
+ "note": "Caden (Nov 18 cards): only the first 3 dead votes count per Accord, and a dead Voice of the Accord counts as 1 of them. Dead votes in cast order: Ann (dead Voice), Ben, Mab, then Cal, all on Gus. Ann takes one slot with weight 1, so Ann, Ben and Mab count (Gus 3 vs Tor 2, Gus executed) and Cal is blocked with Max votes reached. If the Voice took 2 slots, Mab would be blocked; with weight 2, Gus would have 4.",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Ann",
+   "role": "voice-of-the-accord"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-foresight-elder"
+  },
+  {
+   "name": "Dee",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Eli",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Gus",
+   "role": "the-failsafe"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Mab"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ben"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Dee"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {
+    "Eli": "Tor",
+    "Fay": "Tor",
+    "Tor": "Gus",
+    "Gus": "Gus"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "Eli": "Tor",
+    "Fay": "Tor",
+    "Tor": "SAVE",
+    "Gus": "SAVE",
+    "Ann": "Gus",
+    "Ben": "Gus",
+    "Mab": "Gus",
+    "Cal": "Gus",
+    "Dee": "SAVE"
+   }
+  },
+  {
+   "op": "execute",
+   "target": "auto"
+  }
+ ],
+ "expect": [
+  {
+   "after": "vote",
+   "round": 3,
+   "remindersInclude": [
+    "A dead Voice of the Accord counts as 1",
+    "Dead votes counted: 3 of 3"
+   ],
+   "logIncludes": [
+    "Max votes reached: Cal"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 3,
+   "livingCount": 3,
+   "winner": "",
+   "livingNames": [
+    "Tor",
+    "Eli",
+    "Fay"
+   ],
+   "logIncludes": [
+    "Gus 3",
+    "Tor 2"
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Dee",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

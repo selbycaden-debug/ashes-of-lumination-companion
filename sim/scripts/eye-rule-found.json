@@ -1,0 +1,360 @@
+{
+  "name": "eye-rule-found",
+  "seed": 3,
+  "note": "Caden ruling 2026-11-16: Watching Eye. Miss poisons a random player; a Mire Touched target is cured with no info; a hit names only The Ashen Tyrant and ends the Eye's checks.",
+  "players": [
+    {
+      "name": "Tor",
+      "role": "the-ashen-tyrant"
+    },
+    {
+      "name": "Mab",
+      "role": "the-ashen-mirebane"
+    },
+    {
+      "name": "Bly",
+      "role": "the-shadow-blade"
+    },
+    {
+      "name": "Eve",
+      "role": "the-watching-eye"
+    },
+    {
+      "name": "Xan",
+      "role": "the-parallax",
+      "ashTouched": true
+    },
+    {
+      "name": "Ora",
+      "role": "the-vitality-overseer"
+    },
+    {
+      "name": "Lio",
+      "role": "the-foresight-elder"
+    },
+    {
+      "name": "Vic",
+      "role": "voice-of-the-accord"
+    },
+    {
+      "name": "Ren",
+      "role": "the-lumen-bearer"
+    }
+  ],
+  "steps": [
+    {
+      "op": "startRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "Tor",
+          "action": "kill",
+          "skip": true
+        },
+        {
+          "player": "Mab",
+          "action": "poison",
+          "skip": true
+        },
+        {
+          "player": "Bly",
+          "action": "check",
+          "target": "Ren"
+        },
+        {
+          "player": "Ora",
+          "action": "shield",
+          "target": "Ora"
+        },
+        {
+          "player": "Lio",
+          "action": "check",
+          "target": "Lio"
+        },
+        {
+          "player": "Xan",
+          "action": "parallax",
+          "target": "Xan",
+          "target2": "Ren"
+        },
+        {
+          "player": "Eve",
+          "action": "check",
+          "target": "Ren"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    },
+    {
+      "op": "lumination",
+      "actions": []
+    },
+    {
+      "op": "resolveLumination"
+    },
+    {
+      "op": "execute",
+      "target": "No execution"
+    },
+    {
+      "op": "nextRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "Tor",
+          "action": "kill",
+          "skip": true
+        },
+        {
+          "player": "Mab",
+          "action": "poison",
+          "target": "Lio"
+        },
+        {
+          "player": "Bly",
+          "action": "check",
+          "target": "Ren"
+        },
+        {
+          "player": "Ora",
+          "action": "shield",
+          "target": "Ora"
+        },
+        {
+          "player": "Lio",
+          "action": "check",
+          "target": "Lio"
+        },
+        {
+          "player": "Xan",
+          "action": "parallax",
+          "target": "Xan",
+          "target2": "Ren"
+        },
+        {
+          "player": "Eve",
+          "action": "check",
+          "target": "Lio"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    },
+    {
+      "op": "lumination",
+      "actions": []
+    },
+    {
+      "op": "resolveLumination"
+    },
+    {
+      "op": "execute",
+      "target": "No execution"
+    },
+    {
+      "op": "nextRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "Tor",
+          "action": "kill",
+          "skip": true
+        },
+        {
+          "player": "Mab",
+          "action": "poison",
+          "skip": true
+        },
+        {
+          "player": "Bly",
+          "action": "check",
+          "target": "Ren"
+        },
+        {
+          "player": "Ora",
+          "action": "shield",
+          "target": "Ora"
+        },
+        {
+          "player": "Lio",
+          "action": "check",
+          "target": "Lio"
+        },
+        {
+          "player": "Xan",
+          "action": "parallax",
+          "target": "Xan",
+          "target2": "Ren"
+        },
+        {
+          "player": "Eve",
+          "action": "check",
+          "target": "Xan"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    },
+    {
+      "op": "lumination",
+      "actions": []
+    },
+    {
+      "op": "resolveLumination"
+    },
+    {
+      "op": "execute",
+      "target": "No execution"
+    },
+    {
+      "op": "nextRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "Tor",
+          "action": "kill",
+          "skip": true
+        },
+        {
+          "player": "Mab",
+          "action": "poison",
+          "skip": true
+        },
+        {
+          "player": "Bly",
+          "action": "check",
+          "target": "Ren"
+        },
+        {
+          "player": "Ora",
+          "action": "shield",
+          "target": "Ora"
+        },
+        {
+          "player": "Lio",
+          "action": "check",
+          "target": "Lio"
+        },
+        {
+          "player": "Xan",
+          "action": "parallax",
+          "target": "Xan",
+          "target2": "Ren"
+        },
+        {
+          "player": "Eve",
+          "action": "check",
+          "target": "Xan"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    }
+  ],
+  "expect": [
+    {
+      "after": "startRound",
+      "round": 1,
+      "needsAshAction": {
+        "Eve": true
+      },
+      "remindersInclude": [
+        "The Watching Eye (Eve) is still hunting"
+      ],
+      "eyeLine": "Watching Eye: still hunting"
+    },
+    {
+      "after": "resolveAshFall",
+      "round": 1,
+      "results": {
+        "Eve": "Ren is not the Ash Touched player."
+      },
+      "logIncludes": [
+        "The Watching Eye missed. A random player is Mire Touched"
+      ]
+    },
+    {
+      "after": "resolveAshFall",
+      "round": 2,
+      "results": {
+        "Eve": "Your check on Lio gives you no information tonight."
+      },
+      "logIncludes": [
+        "Lio was Mire Touched and is cured by The Watching Eye. The Eye gets no information, and no one is poisoned tonight (Caden, Q-EYE-1)."
+      ],
+      "resultForbids": {
+        "Eve": [
+          "Lio is not the Ash Touched",
+          "Lio is the Ash Touched"
+        ]
+      }
+    },
+    {
+      "after": "resolveAshFall",
+      "round": 3,
+      "results": {
+        "Eve": "Xan is the Ash Touched player. The Ashen Tyrant is Tor. You have no further checks."
+      },
+      "logIncludes": [
+        "The Watching Eye found the Ash Touched player and has no further checks"
+      ]
+    },
+    {
+      "after": "nextRound",
+      "round": 4,
+      "needsAshAction": {
+        "Eve": false
+      },
+      "remindersInclude": [
+        "The Watching Eye (Eve) has no further checks: it found the Ash Touched player."
+      ],
+      "eyeLine": "Watching Eye: found the Ash Touched player, no further checks"
+    },
+    {
+      "after": "resolveAshFall",
+      "round": 4,
+      "livingCount": 9,
+      "resultForbids": {
+        "Eve": [
+          "current killer",
+          "Bly"
+        ]
+      }
+    }
+  ],
+  "atForce": [
+    {
+      "player": "Xan",
+      "rounds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "value": "false",
+      "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+    }
+  ]
+}

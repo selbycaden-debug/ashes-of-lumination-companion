@@ -1,0 +1,183 @@
+{
+ "name": "audit1121-09-d5-takeover-all-lumen-dead-no-ashen-win",
+ "seed": 11212,
+ "note": "D5: Tor executed at DA1 (Shadow Blade takeover). By AF4 every Lumen is dead with Mab (Ashen) and Bla alive: no Ashen win (parity and all-Lumen-dead are off). DA4 executes Mab: the Blade is last standing and wins alone.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Tor"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Ann"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Bla",
+     "action": "inheritedKill",
+     "target": "Ben"
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cy"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Bla",
+     "action": "inheritedKill",
+     "target": "Dee"
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Mab"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveAshFall",
+   "round": 4,
+   "livingNames": [
+    "Mab",
+    "Bla"
+   ],
+   "winner": ""
+  },
+  {
+   "after": "execute",
+   "round": 4,
+   "livingNames": [
+    "Bla"
+   ],
+   "winner": "shadow"
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Bla",
+   "role": "the-shadow-blade"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cy",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Dee",
+   "role": "the-failsafe"
+  }
+ ]
+}

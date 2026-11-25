@@ -1,0 +1,138 @@
+{
+ "name": "rule1116-03-silent-hand-shown",
+ "seed": 1116,
+ "note": "Caden ruling 2026-11-16 #3: Silent Hand-voided nominations and votes are shown as normal everywhere (public lists) and only quietly dropped from the count. Ann is silenced: her nomination of Ben is listed but Ben gets no ballot seat.",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Sil",
+   "role": "the-silent-hand"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge",
+   "ashTouched": true
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Sil",
+     "action": "check",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {
+    "Ann": "Ben",
+    "Sil": "Cal",
+    "Ben": "Cal",
+    "Cal": "Tor",
+    "Dee": "Cal",
+    "Tor": "Cal"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "Ann": "Cal",
+    "Sil": "Cal",
+    "Ben": "Cal",
+    "Cal": "No execution",
+    "Dee": "Cal",
+    "Tor": "Cal"
+   }
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveLumination",
+   "round": 1,
+   "publicIncludesNoms": [
+    "Ann"
+   ],
+   "ballot": [
+    "Cal",
+    "Tor",
+    "No execution"
+   ],
+   "publicForbids": [
+    "void",
+    "silenc",
+    "Silent Hand"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 1,
+   "publicIncludesVotes": [
+    "Ann"
+   ],
+   "publicForbids": [
+    "void",
+    "silenc",
+    "Silent Hand"
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Ben",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

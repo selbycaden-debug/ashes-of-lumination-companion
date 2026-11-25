@@ -1,0 +1,115 @@
+{
+ "name": "rule1117-06-eye-false-hit-stops",
+ "seed": 1117,
+ "note": "Caden ruling 2026-11-17 (Q-EYE-2, \"Yes I agree\"): an Eye shown a false hit stops checking. Asked about a Mire Touched Eye; applied here to an Ash Touched Eye forced FALSE: it checks Ann (not Ash Touched), is told Ann is, gets a non-Tyrant name, and has no checks at AF2.",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Eye",
+   "role": "the-watching-eye",
+   "ashTouched": true
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Eye",
+     "action": "check",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "results": {
+    "Eye": "Ann is the Ash Touched player."
+   },
+   "resultForbids": {
+    "Eye": [
+     "The Ashen Tyrant is Tor."
+    ]
+   },
+   "logIncludes": [
+    "was shown a false hit and believes it found the Ash Touched player"
+   ],
+   "atRolls": [
+    {
+     "name": "Eye",
+     "label": "Watching Eye check",
+     "lie": true,
+     "how": "GM override"
+    }
+   ]
+  },
+  {
+   "after": "nextRound",
+   "round": 2,
+   "needsAshAction": {
+    "Eye": false
+   }
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Eye",
+   "rounds": [
+    1
+   ],
+   "value": "false"
+  }
+ ]
+}

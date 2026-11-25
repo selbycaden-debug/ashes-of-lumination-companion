@@ -1,0 +1,21 @@
+{
+ "name": "rule1118b-06-6p-one-ashen",
+ "seed": 11182,
+ "note": "Caden (Nov 18): games of 5–6 players have 1 Ashen. Random 6-player deal.",
+ "steps": [
+  {
+   "op": "startRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "startRound",
+   "round": 1,
+   "teamCounts": {
+    "Ashen": 1
+   }
+  }
+ ],
+ "deal": "random",
+ "playerCount": 6
+}

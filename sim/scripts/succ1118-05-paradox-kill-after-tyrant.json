@@ -1,0 +1,180 @@
+{
+ "name": "succ1118-05-paradox-kill-after-tyrant",
+ "seed": 11184,
+ "note": "Caden (Nov 18 card, 1:57 PM): the converted Paradox keeps its own kill after the Tyrant dies; a night of peace does not pause it (Caden, Nov 18 card: \"Yes, the Paradox still kills\"). Tor executed DA1, Rex inherits. AF2 (night of peace for the inherited kill): Pax still kills Ann. AF3: Pax kills Ben and Rex kills Cal (2 deaths).",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Pax"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall",
+   "flip": "tails"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Tor"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Pax",
+     "action": "kill",
+     "target": "Ann"
+    },
+    {
+     "player": "Rex",
+     "action": "inheritedKill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Pax",
+     "action": "kill",
+     "target": "Ben"
+    },
+    {
+     "player": "Rex",
+     "action": "inheritedKill",
+     "target": "Cal"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  }
+ ],
+ "expect": [
+  {
+   "after": "execute",
+   "round": 1,
+   "winner": "",
+   "logIncludes": [
+    "Tyrant kill will pass to Rex"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 2,
+   "dead": [
+    "Tor",
+    "Ann"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 3,
+   "dead": [
+    "Tor",
+    "Ann",
+    "Ben",
+    "Cal"
+   ],
+   "winner": ""
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Rex",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "Pax",
+   "role": "the-luminary-paradox"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

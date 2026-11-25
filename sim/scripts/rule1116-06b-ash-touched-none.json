@@ -1,0 +1,46 @@
+{
+ "name": "rule1116-06b-ash-touched-none",
+ "seed": 1116,
+ "note": "Caden ruling 2026-11-16 #6: with nobody placed, the GM reminder asks for exactly 1 and shows the placement-guidance placeholder.",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "startRound",
+   "round": 1,
+   "remindersInclude": [
+    "Caden: exactly 1 per game, placed by the GM",
+    "[placeholder — Ahsoka is writing it]"
+   ]
+  }
+ ]
+}

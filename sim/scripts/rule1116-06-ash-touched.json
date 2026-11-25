@@ -1,0 +1,104 @@
+{
+ "name": "rule1116-06-ash-touched",
+ "seed": 1116,
+ "note": "Caden ruling 2026-11-16 #6: exactly 1 Ash Touched per game, placed by the GM. A forced deal with two is flagged; GM placement on Cal clears the others. Placement guidance is a placeholder until Ahsoka writes it.",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer",
+   "ashTouched": true
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge",
+   "ashTouched": true
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  }
+ ],
+ "steps": [
+  {
+   "op": "placeAshTouched",
+   "player": "Cal"
+  },
+  {
+   "op": "startRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "after-deal",
+   "logIncludes": [
+    "2 players are marked Ash Touched. Caden: exactly 1 per game"
+   ],
+   "remindersInclude": [
+    "2 players are marked Ash Touched"
+   ]
+  },
+  {
+   "after": "placeAshTouched",
+   "logIncludes": [
+    "GM placed Ash Touched on Cal"
+   ],
+   "remindersForbid": [
+    "marked Ash Touched"
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Ann",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  },
+  {
+   "player": "Ben",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

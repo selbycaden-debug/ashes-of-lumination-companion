@@ -1,0 +1,110 @@
+{
+ "name": "audit1121-14-d55-void-outlives-silent-hand",
+ "seed": 11212,
+ "note": "D55: Sil voids Cy at AF1 and Tor kills Sil the same night. Cy's DA1 vote still counts 0, so the only vote cast leaves no positive tally and no one is executed.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Sil"
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    },
+    {
+     "player": "Sil",
+     "action": "check",
+     "target": "Cy"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {
+    "Ann": "Dee",
+    "Ben": "Eli",
+    "Cy": "Fay"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "Cy": "Dee"
+   }
+  },
+  {
+   "op": "execute",
+   "target": "auto"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "dead": [
+    "Sil"
+   ],
+   "logIncludes": [
+    "Cy's votes will not count at the coming Dawn Accord"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 1,
+   "livingCount": 8
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Sil",
+   "role": "the-silent-hand"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cy",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Dee",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Eli",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Fay",
+   "role": "the-parallax"
+  }
+ ]
+}

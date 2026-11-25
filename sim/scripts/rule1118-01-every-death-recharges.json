@@ -1,0 +1,265 @@
+{
+ "name": "rule1118-01-every-death-recharges",
+ "seed": 1118,
+ "note": "Caden (Nov 18 card): \"Yes, every death counts\" toward the 5-death recharge. Sun shoots Ann (Ashen Mind, so the shot hits) at L1 (0 deaths before); Ann's Soulbound partner Ben dies too (2), Cal dies of three poisons at AF4 (3), Tor kills Dee at AF4 (4), Eli is executed at DA4 (5): Sun's use returns only then.",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Sun",
+   "role": "sunmark-shooter"
+  },
+  {
+   "name": "Ann",
+   "role": "the-ashen-mind",
+   "soulbound": "Ben"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge",
+   "soulbound": "Ann"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Gus",
+   "role": "the-foresight-elder",
+   "ashTouched": true
+  },
+  {
+   "name": "Ivy",
+   "role": "the-silent-hand"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "target": "Cal"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Sun",
+     "action": "shot",
+     "target": "Ann"
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "target": "Cal"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "target": "Cal"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Dee"
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Eli"
+  },
+  {
+   "op": "nextRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveLumination",
+   "round": 1,
+   "charges": {
+    "Sun": 0
+   },
+   "dead": [
+    "Ann",
+    "Ben"
+   ],
+   "logIncludes": [
+    "has died (a Sunmark shot)",
+    "dies with their Soulbound partner"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 4,
+   "charges": {
+    "Sun": 0
+   },
+   "dead": [
+    "Ann",
+    "Ben",
+    "Cal",
+    "Dee"
+   ],
+   "logIncludes": [
+    "has died (three-poison death)"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 4,
+   "charges": {
+    "Sun": 1
+   },
+   "results": {
+    "Sun": "has 1 use again"
+   },
+   "logIncludes": [
+    "regained 1 use: 5 more players have died"
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Gus",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

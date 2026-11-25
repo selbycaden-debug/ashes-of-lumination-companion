@@ -1,0 +1,119 @@
+{
+ "name": "shieldsoul1121-04-partner-executed-after-shield-window",
+ "seed": 11211,
+ "note": "Shield window check: Tova shields Ben at AF1; the shield ends when Lumination ends, so when Ann is executed at DA1, Ben is no longer shielded and dies with her. (App default: a shield still active at the Dawn Accord would save Ben; in this app that only happens if the GM marks him Shielded by hand.)",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Tova",
+     "action": "shield",
+     "target": "Ben"
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Ann"
+  }
+ ],
+ "expect": [
+  {
+   "after": "execute",
+   "round": 1,
+   "dead": [
+    "Ann",
+    "Ben"
+   ],
+   "livingCount": 7
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer",
+   "soulbound": "Ben"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge",
+   "soulbound": "Ann"
+  },
+  {
+   "name": "Tova",
+   "role": "the-vitality-overseer"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

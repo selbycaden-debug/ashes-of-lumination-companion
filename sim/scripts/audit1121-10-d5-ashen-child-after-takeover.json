@@ -1,0 +1,112 @@
+{
+ "name": "audit1121-10-d5-ashen-child-after-takeover",
+ "seed": 11212,
+ "note": "D5: after a takeover (Tor executed at DA1), executing The Ashen Child at DA2 still gives the Ashen an immediate win.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Tor"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Kid"
+  }
+ ],
+ "expect": [
+  {
+   "after": "execute",
+   "round": 2,
+   "winner": "ashen",
+   "logIncludes": [
+    "The trigger still applies after a Shadow Blade takeover (Design default D5"
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Bla",
+   "role": "the-shadow-blade"
+  },
+  {
+   "name": "Kid",
+   "role": "the-ashen-child"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cy",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Dee",
+   "role": "the-failsafe"
+  }
+ ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "smoke-18-random",
+  "mode": "fuzz",
+  "playerCount": 18,
+  "seed": 18
+}

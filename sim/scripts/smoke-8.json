@@ -1,0 +1,44 @@
+{
+  "name": "smoke-8-child-execution",
+  "seed": 8,
+  "players": [
+    { "name": "Mira", "role": "the-ashen-tyrant" },
+    { "name": "Rowan", "role": "the-ashen-mind" },
+    { "name": "Ellis", "role": "the-vitality-overseer" },
+    { "name": "Jun", "role": "the-shadow-blade" },
+    { "name": "Sable", "role": "the-lumen-bearer" },
+    { "name": "Wren", "role": "the-ashen-child" },
+    { "name": "Theo", "role": "voice-of-the-accord" },
+    { "name": "Kira", "role": "the-foresight-elder" }
+  ],
+  "steps": [
+    { "op": "startRound" },
+    {
+      "op": "ashFall",
+      "actions": [
+        { "player": "Mira", "action": "kill", "skip": true },
+        { "player": "Ellis", "action": "shield", "target": "Wren" },
+        { "player": "Jun", "action": "check", "target": "Mira" },
+        { "player": "Kira", "action": "check", "target": "Kira" }
+      ]
+    },
+    { "op": "resolveAshFall" },
+    { "op": "lumination", "actions": [] },
+    { "op": "resolveLumination" },
+    { "op": "nominate", "nominees": ["Wren", "Mira", "Theo"] },
+    {
+      "op": "vote",
+      "votes": {
+        "Mira": "Wren",
+        "Rowan": "Wren",
+        "Ellis": "Wren",
+        "Jun": "Wren",
+        "Sable": "Wren",
+        "Wren": "Theo",
+        "Theo": "Wren",
+        "Kira": "Wren"
+      }
+    },
+    { "op": "execute", "target": "Wren" }
+  ]
+}

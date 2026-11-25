@@ -1,0 +1,148 @@
+{
+ "name": "audit1121-17-d47-d48-red-scar",
+ "seed": 11212,
+ "note": "D47: Red's L1 day kill on Ben is refused and the use is not spent. D48: at L2 Red's day kill on Shielded Ann fails, and Red is told only 'Your kill failed.'",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Red",
+     "action": "dayKill",
+     "target": "Ben"
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    },
+    {
+     "player": "Tova",
+     "action": "shield",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Red",
+     "action": "dayKill",
+     "target": "Ann"
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveLumination",
+   "round": 1,
+   "livingCount": 9,
+   "charges": {
+    "Red": 1
+   },
+   "logIncludes": [
+    "can't use the Red Scar day kill in Lumination 1 (Design default D47"
+   ]
+  },
+  {
+   "after": "resolveLumination",
+   "round": 2,
+   "livingCount": 9,
+   "charges": {
+    "Red": 0
+   },
+   "results": {
+    "Red": "Your kill failed."
+   }
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Red",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Tova",
+   "role": "the-vitality-overseer"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cy",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Dee",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Eli",
+   "role": "the-parallax"
+  }
+ ]
+}

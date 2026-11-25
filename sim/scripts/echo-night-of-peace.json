@@ -1,0 +1,679 @@
+{
+  "name": "echo-night-of-peace",
+  "seed": 9,
+  "rechargeAt": 8,
+  "note": "Regression from the Game 9 replay: after DA5 the Echo Thief (P14) copies The Ashen Tyrant and is also the successor. On the AF6 night of peace a submitted copied-Tyrant kill must not land (rulebook: the Echo Thief can't use a copied Tyrant kill during the night of peace). Failsafe removed from AF6 so the cancel does not mask the bug.",
+  "players": [
+    {
+      "name": "P11",
+      "role": "the-ashen-mind"
+    },
+    {
+      "name": "P2",
+      "role": "the-vitality-overseer"
+    },
+    {
+      "name": "P8",
+      "role": "the-last-witness"
+    },
+    {
+      "name": "P9",
+      "role": "the-integrity-warden",
+      "ashTouched": true
+    },
+    {
+      "name": "P6",
+      "role": "the-red-scar"
+    },
+    {
+      "name": "P13",
+      "role": "the-shadow-blade"
+    },
+    {
+      "name": "P4",
+      "role": "the-silent-hand"
+    },
+    {
+      "name": "P18",
+      "role": "the-watching-eye"
+    },
+    {
+      "name": "P12",
+      "role": "the-civic-luminary"
+    },
+    {
+      "name": "P15",
+      "role": "voice-of-the-accord"
+    },
+    {
+      "name": "P5",
+      "role": "the-parallax"
+    },
+    {
+      "name": "P7",
+      "role": "sunmark-shooter"
+    },
+    {
+      "name": "P16",
+      "role": "the-ashen-tyrant"
+    },
+    {
+      "name": "P14",
+      "role": "the-echo-thief"
+    },
+    {
+      "name": "P3",
+      "role": "the-syndic"
+    },
+    {
+      "name": "P17",
+      "role": "the-failsafe"
+    },
+    {
+      "name": "P1",
+      "role": "the-foresight-elder"
+    },
+    {
+      "name": "P10",
+      "role": "the-lumen-bearer"
+    }
+  ],
+  "mindMasks": {
+    "P1": "the-ashen-child",
+    "P2": "the-lucid-catalyst",
+    "P7": "the-self-known",
+    "P12": "the-luminary-paradox",
+    "P13": "the-lumen-guard",
+    "P17": "the-necroreclaimer",
+    "P18": "the-quadrant-judge"
+  },
+  "steps": [
+    {
+      "op": "startRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "P17",
+          "action": "check",
+          "target": "P1"
+        },
+        {
+          "player": "P2",
+          "action": "shield",
+          "target": "P2"
+        },
+        {
+          "player": "P4",
+          "action": "check",
+          "target": "P13"
+        },
+        {
+          "player": "P5",
+          "action": "parallax",
+          "target": "P5",
+          "target2": "P7"
+        },
+        {
+          "player": "P9",
+          "action": "check",
+          "target": "P6"
+        },
+        {
+          "player": "P13",
+          "action": "check",
+          "target": "P12"
+        },
+        {
+          "player": "P1",
+          "action": "check",
+          "target": "P10"
+        },
+        {
+          "player": "P16",
+          "action": "kill",
+          "target": "P10"
+        },
+        {
+          "player": "P18",
+          "action": "check",
+          "target": "P13"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    },
+    {
+      "op": "lumination",
+      "actions": [],
+      "nominations": {
+        "P1": "P7",
+        "P2": "P1",
+        "P3": "P12",
+        "P4": "P1",
+        "P5": "P12",
+        "P6": "P1",
+        "P7": "P1",
+        "P8": "P7",
+        "P9": "P2",
+        "P11": "P9",
+        "P12": "P7",
+        "P13": "P1",
+        "P14": "P12",
+        "P15": "P1",
+        "P16": "P1",
+        "P17": "P12",
+        "P18": "P1"
+      }
+    },
+    {
+      "op": "resolveLumination"
+    },
+    {
+      "op": "vote",
+      "votes": {
+        "P2": "P1",
+        "P3": "P1",
+        "P4": "P1",
+        "P5": "P1",
+        "P6": "P1",
+        "P7": "P1",
+        "P8": "P1",
+        "P11": "P1",
+        "P12": "P1",
+        "P13": "P1",
+        "P14": "P1",
+        "P15": "P1",
+        "P16": "P1",
+        "P17": "P1",
+        "P18": "P1",
+        "P10": "P1",
+        "P1": "P7",
+        "P9": "P7"
+      }
+    },
+    {
+      "op": "execute",
+      "target": "P1"
+    },
+    {
+      "op": "nextRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "P17",
+          "action": "check",
+          "target": "P9"
+        },
+        {
+          "player": "P2",
+          "action": "shield",
+          "target": "P7"
+        },
+        {
+          "player": "P4",
+          "action": "check",
+          "target": "P9"
+        },
+        {
+          "player": "P5",
+          "action": "parallax",
+          "target": "P5",
+          "target2": "P9"
+        },
+        {
+          "player": "P9",
+          "action": "check",
+          "target": "P11"
+        },
+        {
+          "player": "P13",
+          "action": "check",
+          "target": "P9"
+        },
+        {
+          "player": "P14",
+          "action": "check",
+          "target": "P9"
+        },
+        {
+          "player": "P16",
+          "action": "kill",
+          "target": "P18"
+        },
+        {
+          "player": "P18",
+          "action": "check",
+          "target": "P9"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    },
+    {
+      "op": "lumination",
+      "actions": [
+        {
+          "player": "P7",
+          "action": "shot",
+          "target": "P8"
+        }
+      ],
+      "nominations": {
+        "P2": "P9",
+        "P3": "P9",
+        "P4": "P9",
+        "P5": "P12",
+        "P6": "P9",
+        "P7": "P9",
+        "P8": "P2",
+        "P9": "P2",
+        "P11": "P9",
+        "P12": "P2",
+        "P13": "P9",
+        "P14": "P9",
+        "P15": "P9",
+        "P16": "P9",
+        "P17": "P9"
+      }
+    },
+    {
+      "op": "resolveLumination"
+    },
+    {
+      "op": "vote",
+      "votes": {
+        "P16": "P9",
+        "P14": "P9",
+        "P11": "P2",
+        "P6": "P9",
+        "P2": "P12",
+        "P3": "P12",
+        "P8": "P2",
+        "P5": "P2",
+        "P4": "P12",
+        "P9": "P2",
+        "P7": "P12",
+        "P13": "P2",
+        "P12": "P2",
+        "P17": "P12",
+        "P18": "SAVE",
+        "P15": "P12",
+        "P1": "P2"
+      }
+    },
+    {
+      "op": "execute",
+      "target": "P12"
+    },
+    {
+      "op": "nextRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "P17",
+          "action": "check",
+          "target": "P6"
+        },
+        {
+          "player": "P2",
+          "action": "shield",
+          "target": "P2"
+        },
+        {
+          "player": "P4",
+          "action": "check",
+          "target": "P6"
+        },
+        {
+          "player": "P5",
+          "action": "parallax",
+          "target": "P5",
+          "target2": "P6"
+        },
+        {
+          "player": "P9",
+          "action": "check",
+          "target": "P5"
+        },
+        {
+          "player": "P13",
+          "action": "check",
+          "target": "P6"
+        },
+        {
+          "player": "P16",
+          "action": "kill",
+          "target": "P8"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    },
+    {
+      "op": "lumination",
+      "actions": [
+        {
+          "player": "P6",
+          "action": "dayKill",
+          "target": "P9"
+        },
+        {
+          "player": "P3",
+          "action": "invite",
+          "target": "P7"
+        },
+        {
+          "player": "P7",
+          "action": "answerInvite",
+          "accept": false
+        }
+      ],
+      "nominations": {
+        "P5": "P6",
+        "P13": "P2",
+        "P2": "P16",
+        "P9": "P16",
+        "P4": "P16",
+        "P6": "P2",
+        "P3": "P16",
+        "P7": "P2",
+        "P16": "P2",
+        "P14": "P2",
+        "P15": "P16",
+        "P11": "P2",
+        "P17": "P16"
+      }
+    },
+    {
+      "op": "resolveLumination"
+    },
+    {
+      "op": "vote",
+      "votes": {
+        "P2": "P16",
+        "P3": "P6",
+        "P6": "P2",
+        "P4": "P6",
+        "P5": "P16",
+        "P7": "P6",
+        "P11": "P2",
+        "P9": "P6",
+        "P13": "P2",
+        "P14": "P2",
+        "P15": "P16",
+        "P8": "P2",
+        "P17": "P6",
+        "P12": "P2",
+        "P16": "P2",
+        "P18": "P16"
+      }
+    },
+    {
+      "op": "execute",
+      "target": "P2"
+    },
+    {
+      "op": "nextRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "P17",
+          "action": "check",
+          "target": "P6"
+        },
+        {
+          "player": "P14",
+          "action": "shield",
+          "target": "P16"
+        },
+        {
+          "player": "P4",
+          "action": "check",
+          "target": "P6"
+        },
+        {
+          "player": "P5",
+          "action": "parallax",
+          "target": "P5",
+          "target2": "P16"
+        },
+        {
+          "player": "P9",
+          "action": "check",
+          "target": "P6"
+        },
+        {
+          "player": "P13",
+          "action": "check",
+          "target": "P11"
+        },
+        {
+          "player": "P16",
+          "action": "kill",
+          "target": "P13"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    },
+    {
+      "op": "lumination",
+      "actions": [
+        {
+          "player": "P6",
+          "action": "dayKill",
+          "target": "P5"
+        },
+        {
+          "player": "P3",
+          "action": "invite",
+          "target": "P15"
+        },
+        {
+          "player": "P15",
+          "action": "answerInvite",
+          "accept": false
+        }
+      ],
+      "nominations": {
+        "P5": "P6",
+        "P6": "P17",
+        "P9": "P6",
+        "P11": "P6",
+        "P14": "P6",
+        "P3": "P6",
+        "P7": "P6",
+        "P4": "P6",
+        "P16": "P6",
+        "P15": "P6",
+        "P17": "P6"
+      }
+    },
+    {
+      "op": "resolveLumination"
+    },
+    {
+      "op": "vote",
+      "votes": {
+        "P6": "No execution",
+        "P11": "P6",
+        "P14": "P6",
+        "P3": "P6",
+        "P4": "P6",
+        "P16": "P6",
+        "P5": "P6",
+        "P15": "P6",
+        "P13": "SAVE",
+        "P9": "P6",
+        "P17": "P6",
+        "P7": "P6",
+        "P2": "SAVE"
+      }
+    },
+    {
+      "op": "execute",
+      "target": "P6"
+    },
+    {
+      "op": "nextRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "P17",
+          "action": "check",
+          "target": "P16"
+        },
+        {
+          "player": "P4",
+          "action": "check",
+          "target": "P16"
+        },
+        {
+          "player": "P5",
+          "action": "parallax",
+          "target": "P5",
+          "target2": "P14"
+        },
+        {
+          "player": "P9",
+          "action": "check",
+          "target": "P16"
+        },
+        {
+          "player": "P16",
+          "action": "kill",
+          "target": "P5"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    },
+    {
+      "op": "lumination",
+      "actions": [
+        {
+          "player": "P14",
+          "action": "dayKill",
+          "target": "P5"
+        }
+      ],
+      "nominations": {
+        "P5": "P16",
+        "P9": "P16",
+        "P4": "P16",
+        "P3": "P16",
+        "P7": "P16",
+        "P17": "P16",
+        "P15": "P16",
+        "P14": "P16",
+        "P11": "P16",
+        "P16": "P5"
+      }
+    },
+    {
+      "op": "resolveLumination"
+    },
+    {
+      "op": "vote",
+      "votes": {
+        "P16": "No execution",
+        "P5": "SAVE",
+        "P11": "P16",
+        "P14": "P16",
+        "P3": "P16",
+        "P4": "P16",
+        "P9": "P16",
+        "P15": "P16",
+        "P7": "P16",
+        "P17": "P16",
+        "P13": "SAVE",
+        "P2": "SAVE",
+        "P6": "SAVE"
+      }
+    },
+    {
+      "op": "execute",
+      "target": "P16"
+    },
+    {
+      "op": "nextRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "P4",
+          "action": "check",
+          "target": "P14"
+        },
+        {
+          "player": "P9",
+          "action": "check",
+          "target": "P14"
+        },
+        {
+          "player": "P14",
+          "action": "kill",
+          "target": "P15"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    }
+  ],
+  "expect": [
+    {
+      "after": "resolveAshFall",
+      "round": 6,
+      "livingCount": 8,
+      "livingNames": [
+        "P3",
+        "P4",
+        "P7",
+        "P9",
+        "P11",
+        "P14",
+        "P15",
+        "P17"
+      ]
+    }
+  ],
+  "atForce": [
+    {
+      "player": "P9",
+      "rounds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "value": "false",
+      "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+    }
+  ]
+}

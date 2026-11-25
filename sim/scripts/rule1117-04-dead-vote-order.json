@@ -1,0 +1,191 @@
+{
+ "name": "rule1117-04-dead-vote-order",
+ "seed": 1117,
+ "note": "UPDATED for Caden 2026-11-18 (only the first 3 dead votes count per Accord; later dead voters get Max votes reached). Was Nov 17: dead votes count in cast order up to the living voters (2). Dead votes in cast order: Ben, Ann, Mab, then Cal. Ben, Ann and Mab count; Cal is blocked and keeps the final vote.",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-foresight-elder"
+  },
+  {
+   "name": "Dee",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Eli",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Gus",
+   "role": "the-failsafe"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Mab"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ben"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Dee"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {
+    "Eli": "Tor",
+    "Fay": "Tor",
+    "Tor": "Gus",
+    "Gus": "Gus"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "Eli": "Tor",
+    "Fay": "Tor",
+    "Tor": "SAVE",
+    "Gus": "SAVE",
+    "Ben": "Gus",
+    "Ann": "Gus",
+    "Mab": "Gus",
+    "Cal": "Gus",
+    "Dee": "SAVE"
+   }
+  },
+  {
+   "op": "execute",
+   "target": "auto"
+  }
+ ],
+ "expect": [
+  {
+   "after": "vote",
+   "round": 3,
+   "remindersInclude": [
+    "Dead votes counted: 3 of 3"
+   ],
+   "logIncludes": [
+    "Max votes reached: Cal"
+   ],
+   "superseded": [
+    {
+     "field": "remindersInclude",
+     "table": "Not counted, final vote kept: Mab (cap = 2 living voters)",
+     "now": "Ben, Ann, Mab all count; the 4th dead voter (Cal) is blocked",
+     "ruling": "Caden card 2026-11-18 8:21 AM MT: only three dead votes count per accord; later dead voters get max votes reached."
+    }
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Dee",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

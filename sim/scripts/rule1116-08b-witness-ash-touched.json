@@ -1,0 +1,171 @@
+{
+ "name": "rule1116-08b-witness-ash-touched",
+ "seed": 1116,
+ "note": "Caden rulings 2026-11-16 #8 + 2026-11-17: an Ash Touched Witness at 10+ players learns only a team, and the result may be true or false. Forced: round 2 FALSE (truth Lumen, so Ashen or Unaligned is shown), round 3 TRUE (truth Ashen). Never a role.",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Wit",
+   "role": "the-last-witness",
+   "ashTouched": true
+  },
+  {
+   "name": "Lio",
+   "role": "the-foresight-elder"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Lio"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Mab"
+  },
+  {
+   "op": "nextRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "nextRound",
+   "round": 2,
+   "results": {
+    "Wit": "Dawn Accord was on the"
+   },
+   "resultForbids": {
+    "Wit": [
+     "was on the Lumen team",
+     "The Foresight Elder"
+    ]
+   },
+   "atRolls": [
+    {
+     "name": "Wit",
+     "round": 2,
+     "label": "Last Witness team",
+     "lie": true,
+     "how": "GM override"
+    }
+   ]
+  },
+  {
+   "after": "nextRound",
+   "round": 3,
+   "results": {
+    "Wit": "was on the Ashen team"
+   },
+   "resultForbids": {
+    "Wit": [
+     "was on the Lumen team",
+     "The Ashen Mirebane"
+    ]
+   },
+   "atRolls": [
+    {
+     "name": "Wit",
+     "round": 3,
+     "label": "Last Witness team",
+     "lie": false,
+     "how": "GM override"
+    }
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Wit",
+   "rounds": [
+    2
+   ],
+   "value": "false"
+  },
+  {
+   "player": "Wit",
+   "rounds": [
+    3
+   ],
+   "value": "true"
+  }
+ ]
+}

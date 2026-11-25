@@ -1,0 +1,183 @@
+{
+ "name": "rule1118-04-syndic-ashen-dies",
+ "seed": 1118,
+ "note": "Caden (Nov 18 card): \"If an ashen player joins the syndic then the syndic automatically dies the following night.\" The Syndic invites Mab (Ashen) at L1; Mab accepts (an Ashen may refuse, Caden Nov 18 8:33) and gets no recruit shield; the Syndic dies at the start of the next Ash Fall (logged for the GM; counts as a death). The Overseer shield from AF1 has already expired by then (shields end after the Lumination), and the AF2 shield comes too late, so in practice protection cannot reach this death; the code also skips protection checks for it (question for Caden).",
+ "players": [
+  {
+   "name": "Syn",
+   "role": "the-syndic"
+  },
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Ove",
+   "role": "the-vitality-overseer"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    },
+    {
+     "player": "Ove",
+     "action": "shield",
+     "target": "Syn"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Syn",
+     "action": "invite",
+     "target": "Mab"
+    },
+    {
+     "player": "Mab",
+     "action": "answerInvite",
+     "accept": true
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    },
+    {
+     "player": "Ove",
+     "action": "shield",
+     "target": "Syn"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  }
+ ],
+ "expect": [
+  {
+   "after": "lumination",
+   "round": 1,
+   "logIncludes": [
+    "Mab joined the syndicate",
+    "Ashen recruits get no shield (Caden, Nov 18)",
+    "The Syndic will die automatically the following Ash Fall"
+   ],
+   "results": {
+    "Mab": "Ashen recruits get no one-time shield"
+   },
+   "resultForbids": {
+    "Mab": [
+     "You have a one-time shield"
+    ]
+   },
+   "livingCount": 9,
+   "superseded": [
+    {
+     "field": "Ashen invite",
+     "table": "(Nov 18, 8:21) an invited Ashen joined automatically",
+     "now": "Caden (Nov 18 card, 8:33): an invited Ashen can refuse; this script has them accept",
+     "ruling": "Caden card 2026-11-18 8:33 AM MT"
+    }
+   ]
+  },
+  {
+   "after": "nextRound",
+   "round": 2,
+   "dead": [
+    "Syn"
+   ],
+   "livingCount": 8,
+   "logIncludes": [
+    "has died (an Ashen joined the syndicate)",
+    "The Syndic died automatically tonight"
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

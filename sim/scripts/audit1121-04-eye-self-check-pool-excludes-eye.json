@@ -1,0 +1,154 @@
+{
+ "name": "audit1121-04-eye-self-check-pool-excludes-eye",
+ "seed": 11212,
+ "note": "D44/D45: the Eye checks itself on AF1 and AF2 (allowed). Each miss poisons a random living player other than the Eye, so the Eye's poison count stays 0.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    },
+    {
+     "player": "Eye",
+     "action": "check",
+     "target": "Eye"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    },
+    {
+     "player": "Eye",
+     "action": "check",
+     "target": "Eye"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "results": {
+    "Eye": "Eye is not the Ash Touched player"
+   },
+   "poisonCounts": {
+    "Eye": 0
+   },
+   "logIncludes": [
+    "the Eye is not in the pool"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 2,
+   "poisonCounts": {
+    "Eye": 0
+   }
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Ann",
+   "role": "the-foresight-elder",
+   "ashTouched": true
+  },
+  {
+   "name": "Eye",
+   "role": "the-watching-eye"
+  },
+  {
+   "name": "Ben",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Cy",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Ann",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

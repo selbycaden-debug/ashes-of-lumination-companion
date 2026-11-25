@@ -1,0 +1,178 @@
+{
+ "name": "rule1116-02-blade-alone",
+ "seed": 1116,
+ "note": "Caden ruling 2026-11-16 #2: the Shadow Blade wins alone; former Ashen aren't told who is killing. Whether former Ashen share the win stays pending (no co-winners named).",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Bly",
+   "role": "the-shadow-blade"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer",
+   "ashTouched": true
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    },
+    {
+     "player": "Bly",
+     "action": "check",
+     "target": "Ben"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Tor"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": []
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Ben"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Bly",
+     "action": "kill",
+     "target": "Cal"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Mab"
+  }
+ ],
+ "expect": [
+  {
+   "after": "nextRound",
+   "round": 2,
+   "visibleForbids": {
+    "Mab": [
+     "takeover",
+     "Shadow Blade is",
+     "is killing",
+     "Bly holds"
+    ]
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 3,
+   "dead": [
+    "Cal"
+   ],
+   "winner": ""
+  },
+  {
+   "after": "execute",
+   "round": 3,
+   "winner": "shadow",
+   "livingNames": [
+    "Bly"
+   ],
+   "logIncludes": [
+    "last one standing and wins completely alone (Caden",
+    "Former Ashen do not share the win"
+   ],
+   "results": {
+    "Bly": "wins completely alone",
+    "Mab": "former Ashen do not share its win",
+    "Ann": "You did not win."
+   }
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Ann",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

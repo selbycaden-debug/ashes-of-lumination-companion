@@ -1,0 +1,249 @@
+{
+ "name": "rule1117-05-soulbound-untold",
+ "seed": 1117,
+ "note": "Caden (Nov 17 card): Soulbound players are never told they are bound. Ann (bound to Cal) dies at AF1, Cal dies with her; no player screen or public notice mentions Soulbound or a partner.",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer",
+   "soulbound": "Cal"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge",
+   "ashTouched": true
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  }
+ ],
+ "expect": [
+  {
+   "after": "after-deal",
+   "visibleForbids": {
+    "Ann": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Cal": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Tor": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Mab": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Ben": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Dee": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Eli": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ]
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "dead": [
+    "Ann",
+    "Cal"
+   ],
+   "visibleForbids": {
+    "Ann": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Cal": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Tor": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Mab": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Ben": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Dee": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Eli": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ]
+   },
+   "publicForbids": [
+    "Soulbound",
+    "soulbound",
+    "bound to",
+    "partner"
+   ],
+   "logIncludes": [
+    "dies with their Soulbound partner"
+   ]
+  },
+  {
+   "after": "resolveLumination",
+   "round": 1,
+   "visibleForbids": {
+    "Ann": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Cal": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Tor": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Mab": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Ben": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Dee": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ],
+    "Eli": [
+     "Soulbound",
+     "soulbound",
+     "bound to",
+     "partner"
+    ]
+   },
+   "publicForbids": [
+    "Soulbound",
+    "soulbound",
+    "bound to",
+    "partner"
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Ben",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

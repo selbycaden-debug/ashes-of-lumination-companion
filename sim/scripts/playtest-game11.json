@@ -1,0 +1,993 @@
+{
+ "name": "playtest-game11",
+ "seed": 11,
+ "rechargeAt": 8,
+ "note": "Replay of /workspace/aol-playtest/game11.md (18p, Ahsoka seed 2026111611). Seating from the log (P2 Bearer between P18 and P3). P18 Parallax Ash Touched. rechargeAt 8. AF1: Eye before the Warden (Game 10 ruling). Syndic answers are scripted after the votes. Mind advice and team notes (variant c) have no app equivalent. Variant (b) never triggered (the Ash Touched P18 survived). Eye checks at AF3-AF5 are still submitted as at the table; under the Nov 16 Caden ruling the app gives the Eye no action and ignores them (superseded expects).",
+ "players": [
+  {
+   "name": "P2",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "P3",
+   "role": "the-syndic"
+  },
+  {
+   "name": "P14",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "P7",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "P8",
+   "role": "the-civic-luminary"
+  },
+  {
+   "name": "P13",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "P17",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "P4",
+   "role": "the-vitality-overseer"
+  },
+  {
+   "name": "P1",
+   "role": "the-shadow-blade"
+  },
+  {
+   "name": "P15",
+   "role": "sunmark-shooter"
+  },
+  {
+   "name": "P11",
+   "role": "the-foresight-elder"
+  },
+  {
+   "name": "P16",
+   "role": "the-last-witness"
+  },
+  {
+   "name": "P6",
+   "role": "the-silent-hand"
+  },
+  {
+   "name": "P5",
+   "role": "the-ashen-mind"
+  },
+  {
+   "name": "P10",
+   "role": "voice-of-the-accord"
+  },
+  {
+   "name": "P9",
+   "role": "the-watching-eye"
+  },
+  {
+   "name": "P12",
+   "role": "the-echo-thief"
+  },
+  {
+   "name": "P18",
+   "role": "the-parallax",
+   "ashTouched": true
+  }
+ ],
+ "mindMasks": {
+  "P1": "the-self-known",
+  "P4": "the-necroreclaimer",
+  "P8": "the-ashen-child",
+  "P9": "the-quadrant-judge",
+  "P11": "the-lumen-guard",
+  "P13": "the-luminary-paradox",
+  "P15": "the-lucid-catalyst"
+ },
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P1",
+     "action": "check",
+     "target": "P15"
+    },
+    {
+     "player": "P4",
+     "action": "shield",
+     "target": "P4"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P16"
+    },
+    {
+     "player": "P9",
+     "action": "check",
+     "target": "P12"
+    },
+    {
+     "player": "P7",
+     "action": "check",
+     "target": "P14"
+    },
+    {
+     "player": "P11",
+     "action": "check",
+     "target": "P16"
+    },
+    {
+     "player": "P13",
+     "action": "check",
+     "target": "P17"
+    },
+    {
+     "player": "P17",
+     "action": "kill",
+     "target": "P18"
+    },
+    {
+     "player": "P18",
+     "action": "parallax",
+     "target": "P18",
+     "target2": "P2"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {
+    "P1": "P7",
+    "P3": "P7",
+    "P5": "P7",
+    "P6": "P7",
+    "P8": "P7",
+    "P9": "P7",
+    "P10": "P7",
+    "P11": "P7",
+    "P12": "P7",
+    "P13": "P7",
+    "P14": "P7",
+    "P15": "P7",
+    "P16": "P7",
+    "P17": "P7",
+    "P2": "P3",
+    "P4": "P2",
+    "P7": "P2",
+    "P18": "P2"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "P1": "P7",
+    "P2": "P7",
+    "P3": "P7",
+    "P5": "P7",
+    "P6": "P7",
+    "P9": "P7",
+    "P10": "P7",
+    "P11": "P7",
+    "P12": "P7",
+    "P14": "P7",
+    "P16": "P7",
+    "P17": "P7",
+    "P4": "P2",
+    "P7": "P2",
+    "P8": "P2",
+    "P13": "P2",
+    "P15": "P2",
+    "P18": "P2"
+   }
+  },
+  {
+   "op": "execute",
+   "target": "P7"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P1",
+     "action": "check",
+     "target": "P2"
+    },
+    {
+     "player": "P4",
+     "action": "shield",
+     "target": "P18"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P2"
+    },
+    {
+     "player": "P11",
+     "action": "check",
+     "target": "P2"
+    },
+    {
+     "player": "P12",
+     "action": "check",
+     "target": "P18"
+    },
+    {
+     "player": "P13",
+     "action": "check",
+     "target": "P17"
+    },
+    {
+     "player": "P17",
+     "action": "kill",
+     "target": "P11"
+    },
+    {
+     "player": "P18",
+     "action": "parallax",
+     "target": "P18",
+     "target2": "P4"
+    },
+    {
+     "player": "P9",
+     "action": "check",
+     "target": "P18"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P15",
+     "action": "shot",
+     "target": "P18"
+    },
+    {
+     "player": "P14",
+     "action": "dayKill",
+     "target": "P16"
+    },
+    {
+     "player": "P3",
+     "action": "invite",
+     "target": "P2"
+    }
+   ],
+   "nominations": {
+    "P1": "P18",
+    "P2": "P18",
+    "P3": "P18",
+    "P4": "P18",
+    "P5": "P18",
+    "P6": "P18",
+    "P8": "P18",
+    "P10": "P18",
+    "P11": "P18",
+    "P14": "P18",
+    "P15": "P18",
+    "P16": "P18",
+    "P17": "P18",
+    "P9": "P17",
+    "P13": "P17",
+    "P12": "P2",
+    "P18": "P2"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "P1": "P17",
+    "P2": "P17",
+    "P3": "P17",
+    "P4": "P17",
+    "P6": "P17",
+    "P7": "P17",
+    "P8": "P17",
+    "P9": "P17",
+    "P10": "P17",
+    "P11": "P17",
+    "P13": "P17",
+    "P15": "P17",
+    "P16": "P17",
+    "P18": "P17",
+    "P5": "P18",
+    "P12": "P18",
+    "P14": "P18",
+    "P17": "P18"
+   }
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P2",
+     "action": "answerInvite",
+     "accept": false
+    }
+   ]
+  },
+  {
+   "op": "execute",
+   "target": "P17"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P4",
+     "action": "shield",
+     "target": "P9"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P3"
+    },
+    {
+     "player": "P11",
+     "action": "check",
+     "target": "P13"
+    },
+    {
+     "player": "P13",
+     "action": "check",
+     "target": "P12"
+    },
+    {
+     "player": "P18",
+     "action": "parallax",
+     "target": "P18",
+     "target2": "P3"
+    },
+    {
+     "player": "P9",
+     "action": "check",
+     "target": "P18"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P3",
+     "action": "invite",
+     "target": "P2"
+    },
+    {
+     "player": "P3",
+     "action": "invite",
+     "target": "P9"
+    },
+    {
+     "player": "P3",
+     "action": "invite",
+     "target": "P11"
+    },
+    {
+     "player": "P3",
+     "action": "invite",
+     "target": "P13"
+    }
+   ],
+   "nominations": {
+    "P1": "P3",
+    "P2": "P3",
+    "P4": "P3",
+    "P5": "P3",
+    "P6": "P3",
+    "P8": "P3",
+    "P9": "P3",
+    "P10": "P3",
+    "P11": "P3",
+    "P12": "P3",
+    "P13": "P3",
+    "P14": "P3",
+    "P15": "P3",
+    "P18": "P3",
+    "P3": "P14"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "P1": "P3",
+    "P2": "P3",
+    "P4": "P3",
+    "P5": "P3",
+    "P6": "P3",
+    "P8": "P3",
+    "P10": "P3",
+    "P11": "P3",
+    "P12": "P3",
+    "P13": "P3",
+    "P14": "P3",
+    "P15": "P3",
+    "P18": "P3",
+    "P3": "No execution",
+    "P9": "No execution",
+    "P17": "SAVE"
+   }
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P2",
+     "action": "answerInvite",
+     "accept": false
+    },
+    {
+     "player": "P9",
+     "action": "answerInvite",
+     "accept": false
+    },
+    {
+     "player": "P11",
+     "action": "answerInvite",
+     "accept": false
+    },
+    {
+     "player": "P13",
+     "action": "answerInvite",
+     "accept": false
+    }
+   ]
+  },
+  {
+   "op": "execute",
+   "target": "P3"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P1",
+     "action": "kill",
+     "target": "P15"
+    },
+    {
+     "player": "P4",
+     "action": "shield",
+     "target": "P9"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P14"
+    },
+    {
+     "player": "P11",
+     "action": "check",
+     "target": "P5"
+    },
+    {
+     "player": "P13",
+     "action": "check",
+     "target": "P14"
+    },
+    {
+     "player": "P18",
+     "action": "parallax",
+     "target": "P18",
+     "target2": "P5"
+    },
+    {
+     "player": "P9",
+     "action": "check",
+     "target": "P18"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {
+    "P1": "P14",
+    "P2": "P14",
+    "P4": "P14",
+    "P8": "P14",
+    "P5": "P6",
+    "P12": "P6",
+    "P6": "P5",
+    "P10": "P5",
+    "P11": "P5",
+    "P13": "P5",
+    "P18": "P5",
+    "P9": "P1",
+    "P14": "P8"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "P1": "P5",
+    "P2": "P5",
+    "P4": "P5",
+    "P6": "P5",
+    "P8": "P5",
+    "P9": "P5",
+    "P10": "P5",
+    "P11": "P5",
+    "P12": "P5",
+    "P13": "P5",
+    "P14": "P5",
+    "P18": "P5",
+    "P15": "P5",
+    "P5": "P6",
+    "P3": "SAVE",
+    "P17": "SAVE"
+   }
+  },
+  {
+   "op": "execute",
+   "target": "P5"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P1",
+     "action": "kill",
+     "target": "P9"
+    },
+    {
+     "player": "P4",
+     "action": "shield",
+     "target": "P9"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P1"
+    },
+    {
+     "player": "P11",
+     "action": "check",
+     "target": "P1"
+    },
+    {
+     "player": "P13",
+     "action": "check",
+     "target": "P1"
+    },
+    {
+     "player": "P18",
+     "action": "parallax",
+     "target": "P18",
+     "target2": "P1"
+    },
+    {
+     "player": "P9",
+     "action": "check",
+     "target": "P18"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {
+    "P2": "P1",
+    "P4": "P1",
+    "P6": "P1",
+    "P8": "P1",
+    "P9": "P1",
+    "P10": "P1",
+    "P11": "P1",
+    "P13": "P1",
+    "P18": "P1",
+    "P1": "P9",
+    "P12": "P9",
+    "P14": "P9"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "P2": "P1",
+    "P4": "P1",
+    "P6": "P1",
+    "P8": "P1",
+    "P9": "P1",
+    "P10": "P1",
+    "P11": "P1",
+    "P12": "P1",
+    "P13": "P1",
+    "P18": "P1",
+    "P1": "P9",
+    "P3": "SAVE",
+    "P5": "SAVE",
+    "P17": "SAVE"
+   }
+  },
+  {
+   "op": "execute",
+   "target": "P1"
+  }
+ ],
+ "expect": [
+  {
+   "after": "after-deal",
+   "results": {
+    "P2": "do not share alignment"
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "livingCount": 18,
+   "results": {
+    "P1": "P15 is not The Ashen Tyrant",
+    "P7": "P14's condition for the following day: neither",
+    "P11": "P16 appears Lumen",
+    "P18": "P18 and P2 are not on the same team",
+    "P9": "P12 is not the Ash Touched player"
+   }
+  },
+  {
+   "after": "resolveLumination",
+   "round": 1,
+   "livingCount": 18,
+   "ballot": [
+    "P7",
+    "P2",
+    "P3"
+   ],
+   "superseded": [
+    {
+     "field": "publicNominations",
+     "table": "P16's Silent Hand-voided nomination left off the public list (table practice)",
+     "now": "P16's nomination is listed as normal and quietly not counted",
+     "ruling": "Caden ruling 2026-11-16 (#3 Silent Hand): voided nominations and votes are shown as normal everywhere and only quietly dropped from the count."
+    }
+   ],
+   "publicIncludesNoms": [
+    "P16"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 1,
+   "dead": [
+    "P7"
+   ],
+   "livingCount": 17,
+   "winner": ""
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 2,
+   "livingCount": 17,
+   "superseded": [
+    {
+     "field": "result:P9",
+     "table": "P18 is the Ash Touched player. The current killer is P17.",
+     "now": "P18 is the Ash Touched player. The Ashen Tyrant is P17. You have no further checks.",
+     "ruling": "Caden ruling 2026-11-16 (Watching Eye): a correct check reveals only The Ashen Tyrant, then the Eye has no further checks; it also stops once the Tyrant is dead."
+    }
+   ],
+   "results": {
+    "P9": "The Ashen Tyrant is P17. You have no further checks",
+    "P12": "P18's condition for the following day: Ash Touched",
+    "P11": "P2 appears Lumen",
+    "P1": "P2 is not The Ashen Tyrant",
+    "P18": "P18 and P4 are not on the same team"
+   }
+  },
+  {
+   "after": "resolveLumination",
+   "round": 2,
+   "dead": [
+    "P16"
+   ],
+   "livingCount": 16,
+   "ballot": [
+    "P18",
+    "P2",
+    "P17"
+   ],
+   "logIncludes": [
+    "The Sunmark shot missed P18"
+   ],
+   "superseded": [
+    {
+     "field": "publicNominations",
+     "table": "P2's Silent Hand-voided nomination left off the public list (table practice)",
+     "now": "P2's nomination is listed as normal and quietly not counted",
+     "ruling": "Caden ruling 2026-11-16 (#3 Silent Hand): voided nominations and votes are shown as normal everywhere and only quietly dropped from the count."
+    }
+   ],
+   "publicIncludesNoms": [
+    "P2"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 2,
+   "dead": [
+    "P17"
+   ],
+   "livingCount": 15,
+   "winner": "",
+   "results": {
+    "P12": "You copy The Ashen Tyrant"
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 3,
+   "livingCount": 15,
+   "superseded": [
+    {
+     "field": "result:P9",
+     "table": "AF3 check on P18: correct, no killer reveal on the night of peace (GM call)",
+     "now": "no check (the Eye already found the Ash Touched player at AF2, and the Tyrant is dead)",
+     "ruling": "Caden ruling 2026-11-16 (Watching Eye): a correct check reveals only The Ashen Tyrant, then the Eye has no further checks; it also stops once the Tyrant is dead."
+    }
+   ],
+   "results": {
+    "P11": "P13 appears Lumen",
+    "P18": "P18 and P3 are on the same team"
+   }
+  },
+  {
+   "after": "resolveLumination",
+   "round": 3,
+   "livingCount": 15,
+   "ballot": [
+    "P3",
+    "No execution"
+   ],
+   "superseded": [
+    {
+     "field": "publicNominations",
+     "table": "P3's Silent Hand-voided nomination left off the public list (table practice)",
+     "now": "P3's nomination is listed as normal and quietly not counted",
+     "ruling": "Caden ruling 2026-11-16 (#3 Silent Hand): voided nominations and votes are shown as normal everywhere and only quietly dropped from the count."
+    }
+   ],
+   "publicIncludesNoms": [
+    "P3"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 3,
+   "dead": [
+    "P3"
+   ],
+   "livingCount": 14,
+   "winner": "",
+   "results": {
+    "P12": "can't be copied"
+   },
+   "superseded": [
+    {
+     "field": "result:P12",
+     "table": "You copy The Syndic",
+     "now": "can't be copied (no copied ability that round)",
+     "ruling": "Caden ruling 2026-11-16 (#5 Echo Thief): it can't copy Unaligned roles or The Ashen Mind."
+    }
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 4,
+   "dead": [
+    "P15"
+   ],
+   "livingCount": 13,
+   "superseded": [
+    {
+     "field": "result:P9",
+     "table": "P18 is the Ash Touched player. The current killer is P1.",
+     "now": "no check (the Eye already found the Ash Touched player, and the Tyrant is dead), so the secret Blade is not revealed",
+     "ruling": "Caden ruling 2026-11-16 (Watching Eye): a correct check reveals only The Ashen Tyrant, then the Eye has no further checks; it also stops once the Tyrant is dead."
+    }
+   ],
+   "results": {
+    "P11": "P5 appears Ashen",
+    "P18": "P18 and P5 are on the same team"
+   }
+  },
+  {
+   "after": "resolveLumination",
+   "round": 4,
+   "livingCount": 13,
+   "ballot": [
+    "P5",
+    "P14",
+    "P6"
+   ],
+   "superseded": [
+    {
+     "field": "publicNominations",
+     "table": "P14's Silent Hand-voided nomination left off the public list (table practice)",
+     "now": "P14's nomination is listed as normal and quietly not counted",
+     "ruling": "Caden ruling 2026-11-16 (#3 Silent Hand): voided nominations and votes are shown as normal everywhere and only quietly dropped from the count."
+    }
+   ],
+   "publicIncludesNoms": [
+    "P14"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 4,
+   "dead": [
+    "P5"
+   ],
+   "livingCount": 12,
+   "winner": "",
+   "results": {
+    "P12": "can't be copied"
+   },
+   "superseded": [
+    {
+     "field": "result:P12",
+     "table": "You copy The Ashen Mind",
+     "now": "can't be copied (no copied ability that round)",
+     "ruling": "Caden ruling 2026-11-16 (#5 Echo Thief): it can't copy Unaligned roles or The Ashen Mind."
+    }
+   ]
+  },
+  {
+   "after": "nextRound",
+   "round": 5,
+   "superseded": [
+    {
+     "field": "result:P12",
+     "table": "Start-of-round snapshot",
+     "now": "no Echo-Mind snapshot",
+     "ruling": "Caden ruling 2026-11-16 (#5 Echo Thief): it can't copy Unaligned roles or The Ashen Mind."
+    }
+   ],
+   "resultForbids": {
+    "P12": [
+     "Start-of-round snapshot"
+    ]
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 5,
+   "livingCount": 12,
+   "superseded": [
+    {
+     "field": "result:P9",
+     "table": "P18 is the Ash Touched player. The current killer is P1.",
+     "now": "no check, so the secret Blade is not revealed",
+     "ruling": "Caden ruling 2026-11-16 (Watching Eye): a correct check reveals only The Ashen Tyrant, then the Eye has no further checks; it also stops once the Tyrant is dead."
+    }
+   ],
+   "results": {
+    "P11": "P1 appears Ashen",
+    "P18": "P18 and P1 are on the same team"
+   }
+  },
+  {
+   "after": "resolveLumination",
+   "round": 5,
+   "livingCount": 12,
+   "ballot": [
+    "P1",
+    "P9",
+    "No execution"
+   ],
+   "superseded": [
+    {
+     "field": "publicNominations",
+     "table": "P1's Silent Hand-voided nomination left off the public list (table practice)",
+     "now": "P1's nomination is listed as normal and quietly not counted",
+     "ruling": "Caden ruling 2026-11-16 (#3 Silent Hand): voided nominations and votes are shown as normal everywhere and only quietly dropped from the count."
+    }
+   ],
+   "publicIncludesNoms": [
+    "P1"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 5,
+   "dead": [
+    "P1"
+   ],
+   "livingCount": 11,
+   "winner": "lumen",
+   "resultForbids": {
+    "P9": [
+     "current killer",
+     "The Ashen Tyrant is P1."
+    ]
+   },
+   "livingNames": [
+    "P2",
+    "P4",
+    "P6",
+    "P8",
+    "P9",
+    "P10",
+    "P11",
+    "P12",
+    "P13",
+    "P14",
+    "P18"
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "P18",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

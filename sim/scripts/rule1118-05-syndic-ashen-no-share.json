@@ -1,0 +1,136 @@
+{
+ "name": "rule1118-05-syndic-ashen-no-share",
+ "seed": 1118,
+ "note": "Caden (Nov 18): the Syndic should recruit only Lumen; an Ashen who joins never shares a Syndic win. Ben joins at L1 and Tor (Ashen) accepts too; Cal is executed at DA1, so the Syndic wins before its automatic death. Syn and Ben win; Tor does not.",
+ "players": [
+  {
+   "name": "Syn",
+   "role": "the-syndic"
+  },
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Dee"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Syn",
+     "action": "invite",
+     "target": "Ben"
+    },
+    {
+     "player": "Ben",
+     "action": "answerInvite",
+     "accept": true
+    },
+    {
+     "player": "Syn",
+     "action": "invite",
+     "target": "Tor"
+    },
+    {
+     "player": "Tor",
+     "action": "answerInvite",
+     "accept": true
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  }
+ ],
+ "expect": [
+  {
+   "after": "execute",
+   "round": 1,
+   "winner": "syndic",
+   "livingNames": [
+    "Syn",
+    "Tor",
+    "Ben"
+   ],
+   "results": {
+    "Syn": "You win, together with your living recruits",
+    "Ben": "As a living recruit, you win with The Syndic",
+    "Tor": "You joined as an Ashen, so you do not share the win"
+   },
+   "resultForbids": {
+    "Tor": [
+     "you win with The Syndic"
+    ]
+   },
+   "logIncludes": [
+    "Tor joined the syndicate",
+    "dead recruits and any Ashen recruit do not",
+    "Only him and his recruits win everyone else lose"
+   ],
+   "superseded": [
+    {
+     "field": "Ashen invite",
+     "table": "(Nov 18, 8:21) an invited Ashen joined automatically",
+     "now": "Caden (Nov 18 card, 8:33): an invited Ashen can refuse; this script has them accept",
+     "ruling": "Caden card 2026-11-18 8:33 AM MT"
+    }
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

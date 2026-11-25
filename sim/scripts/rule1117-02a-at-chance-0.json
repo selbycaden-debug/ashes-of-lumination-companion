@@ -1,0 +1,238 @@
+{
+ "name": "rule1117-02a-at-chance-0",
+ "seed": 1117,
+ "note": "Caden ruling 2026-11-17 (\"Any information may be true or false to an ash touched player\"): with the GM chance of a false result at 0%, every Ash Touched result is true (Bearer, Mind, Elder, Warden, Parallax, Eye, Blade check, Self Known, Witness team).",
+ "players": [
+  {
+   "name": "Ann",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Brr",
+   "role": "the-lumen-bearer",
+   "ashTouched": true
+  },
+  {
+   "name": "Ben",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mnd",
+   "role": "the-ashen-mind",
+   "ashTouched": true
+  },
+  {
+   "name": "Bly",
+   "role": "the-shadow-blade",
+   "ashTouched": true
+  },
+  {
+   "name": "Eld",
+   "role": "the-foresight-elder",
+   "ashTouched": true
+  },
+  {
+   "name": "War",
+   "role": "the-integrity-warden",
+   "ashTouched": true
+  },
+  {
+   "name": "Par",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Eye",
+   "role": "the-watching-eye",
+   "ashTouched": true
+  },
+  {
+   "name": "Wit",
+   "role": "the-last-witness",
+   "ashTouched": true
+  },
+  {
+   "name": "Slf",
+   "role": "the-self-known",
+   "ashTouched": true
+  },
+  {
+   "name": "Cal",
+   "role": "the-lumen-guard"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Eld",
+     "action": "check",
+     "target": "Tor"
+    },
+    {
+     "player": "War",
+     "action": "check",
+     "target": "Ann"
+    },
+    {
+     "player": "Par",
+     "action": "parallax",
+     "target": "Tor",
+     "target2": "Mnd"
+    },
+    {
+     "player": "Eye",
+     "action": "check",
+     "target": "Brr"
+    },
+    {
+     "player": "Bly",
+     "action": "check",
+     "target": "Tor"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Slf",
+     "action": "question",
+     "target": "Tor",
+     "role": "the-ashen-tyrant"
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "answerSelfKnown"
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  },
+  {
+   "op": "nextRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "after-deal",
+   "results": {
+    "Brr": "share alignment."
+   },
+   "atRolls": [
+    {
+     "name": "Brr",
+     "label": "Lumen Bearer neighbors",
+     "lie": false,
+     "how": "0% chance"
+    }
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "results": {
+    "Eld": "Tor appears Ashen.",
+    "War": "Ann's condition for the following day: neither.",
+    "Par": "Tor and Mnd are on the same team.",
+    "Eye": "Brr is the Ash Touched player. The Ashen Tyrant is Tor.",
+    "Bly": "Tor is The Ashen Tyrant."
+   },
+   "resultForbids": {
+    "Brr": [
+     "do not share alignment."
+    ]
+   },
+   "atRolls": [
+    {
+     "name": "Eld",
+     "label": "Foresight Elder check",
+     "lie": false,
+     "how": "0% chance"
+    },
+    {
+     "name": "War",
+     "label": "Integrity Warden check",
+     "lie": false,
+     "how": "0% chance"
+    },
+    {
+     "name": "Par",
+     "label": "Parallax check",
+     "lie": false,
+     "how": "0% chance"
+    },
+    {
+     "name": "Eye",
+     "label": "Watching Eye check",
+     "lie": false,
+     "how": "0% chance"
+    },
+    {
+     "name": "Bly",
+     "label": "Shadow Blade Tyrant check",
+     "lie": false,
+     "how": "0% chance"
+    },
+    {
+     "name": "Mnd",
+     "label": "Ashen Mind snapshot",
+     "lie": false
+    }
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 1,
+   "results": {
+    "Slf": "Is Tor The Ashen Tyrant? — Yes."
+   },
+   "atRolls": [
+    {
+     "name": "Slf",
+     "label": "Self Known question",
+     "lie": false
+    }
+   ]
+  },
+  {
+   "after": "nextRound",
+   "round": 2,
+   "results": {
+    "Wit": "was on the Lumen team."
+   },
+   "needsAshAction": {
+    "Eye": false
+   },
+   "atRolls": [
+    {
+     "name": "Wit",
+     "label": "Last Witness team",
+     "lie": false
+    }
+   ]
+  }
+ ],
+ "atFalsePct": 0
+}

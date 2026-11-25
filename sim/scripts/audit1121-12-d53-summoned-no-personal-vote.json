@@ -1,0 +1,133 @@
+{
+ "name": "audit1121-12-d53-summoned-no-personal-vote",
+ "seed": 11212,
+ "note": "D53: Nec summons Ann and Ben (dead) at L2. Ann then tries to cast her own final vote at DA2: refused, and she keeps it.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Ben"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Nec",
+     "action": "summon",
+     "target": "Ann",
+     "target2": "Ben"
+    }
+   ],
+   "nominations": {
+    "Cy": "Dee",
+    "Dee": "Cy",
+    "Eli": "Fay"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "Ann": "Dee"
+   }
+  }
+ ],
+ "expect": [
+  {
+   "after": "vote",
+   "round": 2,
+   "logIncludes": [
+    "Ann was summoned by The Necroreclaimer this Accord and can't also cast a personal final vote. Not cast; they keep their final vote (Design default D53"
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Nec",
+   "role": "the-necroreclaimer"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cy",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Dee",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Eli",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Fay",
+   "role": "the-parallax"
+  }
+ ]
+}

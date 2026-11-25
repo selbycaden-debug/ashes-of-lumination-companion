@@ -1,0 +1,101 @@
+{
+ "name": "audit1121-06-d18-off-shield-saves-on-execution",
+ "seed": 11212,
+ "note": "D18 OFF (old behaviour): same, and the shield saves Ben from Ann's execution.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "gmToggle",
+   "player": "Ben",
+   "key": "shielded"
+  },
+  {
+   "op": "execute",
+   "target": "Ann"
+  }
+ ],
+ "expect": [
+  {
+   "after": "execute",
+   "round": 1,
+   "dead": [
+    "Ann"
+   ],
+   "livingCount": 8,
+   "logIncludes": [
+    "Shield saved Ben from Soulbound death"
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer",
+   "soulbound": "Ben"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge",
+   "soulbound": "Ann"
+  },
+  {
+   "name": "Tova",
+   "role": "the-vitality-overseer"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  }
+ ],
+ "designDefaults": {
+  "D18": false
+ }
+}

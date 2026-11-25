@@ -1,0 +1,979 @@
+{
+ "name": "playtest-game10",
+ "seed": 152,
+ "rechargeAt": 8,
+ "note": "Replay of /workspace/aol-playtest/game10.md (18p, Ahsoka seed 2026111610). Seating order (P7 Bearer between P12 and P6). P13 Last Witness Ash Touched (Game 10 variant 1: Warden excluded from the AT pool; the app has no AT pool, so this is just a forced AT). rechargeAt 8. AF1: Eye submitted just before the Warden so the Eye's random Mire Touched on P3 shows in P17's result, matching the Game 10 GM ruling; later nights the Eye is last. Syndic accept/decline answers are scripted as soon as the table logged them (harness has no mid-vote hook; membership does not affect tallies). Variants 2 and 3 never triggered and are not in the app. Nov 21 audit: design defaults on; seed re-chosen (152) so the app's Eye miss picks match the table for AF1 (P3) and AF2 (P1). Under D43 the AF3\u2013AF6 misses (table: P14, P18, P8, P12) poison nobody, because the Ash Touched player is dead; intended rules change, same result.",
+ "players": [
+  {
+   "name": "P15",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "P10",
+   "role": "the-parallax"
+  },
+  {
+   "name": "P16",
+   "role": "the-shadow-blade"
+  },
+  {
+   "name": "P8",
+   "role": "the-syndic"
+  },
+  {
+   "name": "P11",
+   "role": "sunmark-shooter"
+  },
+  {
+   "name": "P14",
+   "role": "the-silent-hand"
+  },
+  {
+   "name": "P1",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "P17",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "P3",
+   "role": "the-echo-thief"
+  },
+  {
+   "name": "P9",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "P12",
+   "role": "the-civic-luminary"
+  },
+  {
+   "name": "P7",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "P6",
+   "role": "the-watching-eye"
+  },
+  {
+   "name": "P4",
+   "role": "the-ashen-mind"
+  },
+  {
+   "name": "P5",
+   "role": "the-foresight-elder"
+  },
+  {
+   "name": "P13",
+   "role": "the-last-witness",
+   "ashTouched": true
+  },
+  {
+   "name": "P18",
+   "role": "the-vitality-overseer"
+  },
+  {
+   "name": "P2",
+   "role": "voice-of-the-accord"
+  }
+ ],
+ "mindMasks": {
+  "P5": "the-quadrant-judge",
+  "P6": "the-ashen-child",
+  "P9": "the-lumen-guard",
+  "P11": "the-necroreclaimer",
+  "P12": "the-luminary-paradox",
+  "P16": "the-self-known",
+  "P18": "the-lucid-catalyst"
+ },
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P9",
+     "action": "check",
+     "target": "P12"
+    },
+    {
+     "player": "P18",
+     "action": "shield",
+     "target": "P18"
+    },
+    {
+     "player": "P14",
+     "action": "check",
+     "target": "P5"
+    },
+    {
+     "player": "P5",
+     "action": "check",
+     "target": "P13"
+    },
+    {
+     "player": "P10",
+     "action": "parallax",
+     "target": "P10",
+     "target2": "P16"
+    },
+    {
+     "player": "P16",
+     "action": "check",
+     "target": "P8"
+    },
+    {
+     "player": "P15",
+     "action": "kill",
+     "target": "P10"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P4"
+    },
+    {
+     "player": "P17",
+     "action": "check",
+     "target": "P3"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {
+    "P1": "P17",
+    "P2": "P17",
+    "P3": "P17",
+    "P4": "P17",
+    "P5": "P17",
+    "P6": "P17",
+    "P7": "P17",
+    "P8": "P17",
+    "P11": "P17",
+    "P12": "P17",
+    "P13": "P17",
+    "P14": "P17",
+    "P15": "P17",
+    "P16": "P17",
+    "P18": "P17",
+    "P9": "P16",
+    "P17": "P16"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "P1": "P17",
+    "P2": "P17",
+    "P3": "P17",
+    "P4": "P17",
+    "P5": "P17",
+    "P6": "P17",
+    "P7": "P17",
+    "P8": "P17",
+    "P11": "P17",
+    "P12": "P17",
+    "P13": "P17",
+    "P15": "P17",
+    "P16": "P17",
+    "P18": "P17",
+    "P9": "P16",
+    "P10": "P16",
+    "P14": "P16",
+    "P17": "P16"
+   }
+  },
+  {
+   "op": "execute",
+   "target": "P17"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P9",
+     "action": "check",
+     "target": "P16"
+    },
+    {
+     "player": "P18",
+     "action": "shield",
+     "target": "P3"
+    },
+    {
+     "player": "P14",
+     "action": "check",
+     "target": "P16"
+    },
+    {
+     "player": "P5",
+     "action": "check",
+     "target": "P16"
+    },
+    {
+     "player": "P3",
+     "action": "check",
+     "target": "P7"
+    },
+    {
+     "player": "P16",
+     "action": "check",
+     "target": "P9"
+    },
+    {
+     "player": "P15",
+     "action": "kill",
+     "target": "P13"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P3"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P11",
+     "action": "shot",
+     "target": "P16"
+    },
+    {
+     "player": "P1",
+     "action": "dayKill",
+     "target": "P9"
+    },
+    {
+     "player": "P8",
+     "action": "invite",
+     "target": "P5"
+    }
+   ],
+   "nominations": {
+    "P1": "P16",
+    "P2": "P16",
+    "P3": "P16",
+    "P4": "P16",
+    "P5": "P16",
+    "P6": "P16",
+    "P7": "P16",
+    "P8": "P16",
+    "P9": "P3",
+    "P11": "P16",
+    "P12": "P3",
+    "P14": "P3",
+    "P15": "P16",
+    "P16": "P3",
+    "P18": "P16"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "P1": "P16",
+    "P2": "P3",
+    "P3": "P16",
+    "P4": "P16",
+    "P5": "P16",
+    "P6": "P16",
+    "P7": "P3",
+    "P8": "P3",
+    "P11": "P3",
+    "P12": "No execution",
+    "P14": "P3",
+    "P15": "P16",
+    "P16": "P3",
+    "P18": "No execution",
+    "P9": "SAVE",
+    "P13": "P3",
+    "P17": "SAVE"
+   }
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P5",
+     "action": "answerInvite",
+     "accept": false
+    }
+   ]
+  },
+  {
+   "op": "execute",
+   "target": "P3"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P18",
+     "action": "shield",
+     "target": "P11"
+    },
+    {
+     "player": "P14",
+     "action": "check",
+     "target": "P15"
+    },
+    {
+     "player": "P5",
+     "action": "check",
+     "target": "P16"
+    },
+    {
+     "player": "P16",
+     "action": "check",
+     "target": "P14"
+    },
+    {
+     "player": "P15",
+     "action": "kill",
+     "target": "P11"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P16"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P8",
+     "action": "invite",
+     "target": "P11"
+    },
+    {
+     "player": "P8",
+     "action": "invite",
+     "target": "P16"
+    }
+   ],
+   "nominations": {
+    "P1": "P5",
+    "P2": "P5",
+    "P4": "P14",
+    "P5": "P16",
+    "P6": "P14",
+    "P15": "P14",
+    "P16": "P5",
+    "P7": "P5",
+    "P8": "P5",
+    "P11": "P5",
+    "P12": "P5",
+    "P14": "P5",
+    "P18": "P5"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "P1": "P5",
+    "P4": "P5",
+    "P5": "P16",
+    "P6": "P16",
+    "P8": "P16",
+    "P11": "P16",
+    "P15": "P5",
+    "P16": "P5",
+    "P2": "P16",
+    "P7": "P16",
+    "P12": "P16",
+    "P14": "P16",
+    "P18": "P5",
+    "P3": "SAVE",
+    "P9": "P16",
+    "P17": "P16"
+   }
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P11",
+     "action": "answerInvite",
+     "accept": false
+    },
+    {
+     "player": "P16",
+     "action": "answerInvite",
+     "accept": true
+    }
+   ]
+  },
+  {
+   "op": "execute",
+   "target": "P16"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P18",
+     "action": "shield",
+     "target": "P11"
+    },
+    {
+     "player": "P14",
+     "action": "check",
+     "target": "P4"
+    },
+    {
+     "player": "P5",
+     "action": "check",
+     "target": "P18"
+    },
+    {
+     "player": "P15",
+     "action": "kill",
+     "target": "P5"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P18"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P8",
+     "action": "invite",
+     "target": "P18"
+    },
+    {
+     "player": "P8",
+     "action": "invite",
+     "target": "P11"
+    }
+   ],
+   "nominations": {
+    "P1": "P14",
+    "P2": "P4",
+    "P4": "P2",
+    "P6": "P1",
+    "P7": "P4",
+    "P8": "P4",
+    "P11": "P4",
+    "P12": "P4",
+    "P15": "P14",
+    "P14": "P15",
+    "P18": "P4"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "P1": "P4",
+    "P11": "P4",
+    "P15": "P4",
+    "P4": "P14",
+    "P18": "P4",
+    "P6": "P4",
+    "P2": "P4",
+    "P8": "P4",
+    "P7": "P4",
+    "P12": "P4",
+    "P14": "P4",
+    "P3": "P14",
+    "P5": "SAVE"
+   }
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P11",
+     "action": "answerInvite",
+     "accept": false
+    },
+    {
+     "player": "P18",
+     "action": "answerInvite",
+     "accept": false
+    }
+   ]
+  },
+  {
+   "op": "execute",
+   "target": "P4"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P18",
+     "action": "shield",
+     "target": "P11"
+    },
+    {
+     "player": "P14",
+     "action": "check",
+     "target": "P1"
+    },
+    {
+     "player": "P15",
+     "action": "kill",
+     "target": "P11"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P12"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P8",
+     "action": "invite",
+     "target": "P2"
+    }
+   ],
+   "nominations": {
+    "P1": "P14",
+    "P6": "P1",
+    "P15": "P1",
+    "P2": "P1",
+    "P8": "P1",
+    "P11": "P1",
+    "P7": "P1",
+    "P14": "P15",
+    "P18": "P1",
+    "P12": "P1"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "P1": "No execution",
+    "P15": "P1",
+    "P2": "P1",
+    "P6": "P1",
+    "P7": "P1",
+    "P8": "P1",
+    "P11": "P1",
+    "P12": "P1",
+    "P14": "P1",
+    "P18": "P1",
+    "P4": "P1",
+    "P5": "SAVE",
+    "P16": "SAVE"
+   }
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P2",
+     "action": "answerInvite",
+     "accept": false
+    }
+   ]
+  },
+  {
+   "op": "execute",
+   "target": "P1"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "P18",
+     "action": "shield",
+     "target": "P11"
+    },
+    {
+     "player": "P14",
+     "action": "check",
+     "target": "P15"
+    },
+    {
+     "player": "P15",
+     "action": "kill",
+     "target": "P2"
+    },
+    {
+     "player": "P6",
+     "action": "check",
+     "target": "P8"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "P11",
+     "action": "shot",
+     "target": "P15"
+    }
+   ],
+   "nominations": {
+    "P11": "P6",
+    "P15": "P14",
+    "P6": "P14",
+    "P8": "P15",
+    "P7": "P15",
+    "P12": "P15"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  }
+ ],
+ "expect": [
+  {
+   "after": "after-deal",
+   "results": {
+    "P7": "share alignment"
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "dead": [
+    "P10"
+   ],
+   "livingCount": 17,
+   "results": {
+    "P5": "P13 appears Lumen",
+    "P10": "P10 and P16 are not on the same team",
+    "P16": "P8 is not The Ashen Tyrant",
+    "P17": "P3's condition for the following day: Mire Touched",
+    "P6": "P4 is not the Ash Touched player"
+   }
+  },
+  {
+   "after": "resolveLumination",
+   "round": 1,
+   "livingCount": 17,
+   "ballot": [
+    "P17",
+    "P16",
+    "No execution"
+   ],
+   "superseded": [
+    {
+     "field": "publicNominations",
+     "table": "P5's Silent Hand-voided nomination left off the public list (table practice)",
+     "now": "P5's nomination is listed as normal and quietly not counted",
+     "ruling": "Caden ruling 2026-11-16 (#3 Silent Hand): voided nominations and votes are shown as normal everywhere and only quietly dropped from the count."
+    }
+   ],
+   "publicIncludesNoms": [
+    "P5"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 1,
+   "dead": [
+    "P17"
+   ],
+   "livingCount": 16,
+   "winner": "",
+   "publicIncludesVotes": [
+    "P5",
+    "P10"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 2,
+   "dead": [
+    "P13"
+   ],
+   "livingCount": 15,
+   "results": {
+    "P5": "P16 appears Ashen",
+    "P3": "P7's condition for the following day: neither",
+    "P6": "P3 is not the Ash Touched player"
+   }
+  },
+  {
+   "after": "resolveLumination",
+   "round": 2,
+   "dead": [
+    "P9"
+   ],
+   "livingCount": 14,
+   "ballot": [
+    "P16",
+    "P3",
+    "No execution"
+   ],
+   "logIncludes": [
+    "The Sunmark shot missed P16"
+   ],
+   "superseded": [
+    {
+     "field": "publicNominations",
+     "table": "P16's Silent Hand-voided nomination left off the public list (table practice)",
+     "now": "P16's nomination is listed as normal and quietly not counted",
+     "ruling": "Caden ruling 2026-11-16 (#3 Silent Hand): voided nominations and votes are shown as normal everywhere and only quietly dropped from the count."
+    }
+   ],
+   "publicIncludesNoms": [
+    "P16"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 2,
+   "dead": [
+    "P3"
+   ],
+   "livingCount": 13,
+   "winner": "",
+   "resultForbids": {
+    "P3": [
+     "You copy The Echo Thief"
+    ]
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 3,
+   "livingCount": 13,
+   "logIncludes": [
+    "The kill on P11 failed"
+   ],
+   "results": {
+    "P5": "P16 appears Ashen",
+    "P16": "P14 is not The Ashen Tyrant"
+   }
+  },
+  {
+   "after": "resolveLumination",
+   "round": 3,
+   "livingCount": 13,
+   "ballot": [
+    "P5",
+    "P14",
+    "P16"
+   ],
+   "superseded": [
+    {
+     "field": "publicNominations",
+     "table": "P15's Silent Hand-voided nomination left off the public list (table practice)",
+     "now": "P15's nomination is listed as normal and quietly not counted",
+     "ruling": "Caden ruling 2026-11-16 (#3 Silent Hand): voided nominations and votes are shown as normal everywhere and only quietly dropped from the count."
+    }
+   ],
+   "publicIncludesNoms": [
+    "P15"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 3,
+   "dead": [
+    "P16"
+   ],
+   "livingCount": 12,
+   "winner": ""
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 4,
+   "dead": [
+    "P5"
+   ],
+   "livingCount": 11,
+   "results": {
+    "P5": "P18 appears Lumen"
+   }
+  },
+  {
+   "after": "resolveLumination",
+   "round": 4,
+   "livingCount": 11,
+   "ballot": [
+    "P4",
+    "P14",
+    "P1",
+    "P15"
+   ],
+   "logIncludes": [
+    "Last vision \u2014 P18 appears Lumen"
+   ],
+   "superseded": [
+    {
+     "field": "publicNominations",
+     "table": "P4's Silent Hand-voided nomination left off the public list (table practice)",
+     "now": "P4's nomination is listed as normal and quietly not counted",
+     "ruling": "Caden ruling 2026-11-16 (#3 Silent Hand): voided nominations and votes are shown as normal everywhere and only quietly dropped from the count."
+    }
+   ],
+   "publicIncludesNoms": [
+    "P4"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 4,
+   "dead": [
+    "P4"
+   ],
+   "livingCount": 10,
+   "winner": ""
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 5,
+   "livingCount": 10,
+   "logIncludes": [
+    "The kill on P11 failed"
+   ]
+  },
+  {
+   "after": "resolveLumination",
+   "round": 5,
+   "livingCount": 10,
+   "ballot": [
+    "P1",
+    "P15",
+    "No execution"
+   ],
+   "superseded": [
+    {
+     "field": "publicNominations",
+     "table": "P1's Silent Hand-voided nomination left off the public list (table practice)",
+     "now": "P1's nomination is listed as normal and quietly not counted",
+     "ruling": "Caden ruling 2026-11-16 (#3 Silent Hand): voided nominations and votes are shown as normal everywhere and only quietly dropped from the count."
+    }
+   ],
+   "publicIncludesNoms": [
+    "P1"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 5,
+   "dead": [
+    "P1"
+   ],
+   "livingCount": 9,
+   "winner": ""
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 6,
+   "dead": [
+    "P2"
+   ],
+   "livingCount": 8,
+   "superseded": [
+    {
+     "field": "log",
+     "table": "Living players reached 8 (living-count recharge)",
+     "now": "no threshold recharge; uses come back 5 deaths after they were spent",
+     "ruling": "Caden ruling 2026-11-16 (#10 5-player rule): a used ability regains a use only after 5 more players have died since it was used; replaces the living-count threshold."
+    }
+   ]
+  },
+  {
+   "after": "resolveLumination",
+   "round": 6,
+   "dead": [
+    "P15"
+   ],
+   "livingCount": 7,
+   "winner": "lumen",
+   "livingNames": [
+    "P6",
+    "P7",
+    "P8",
+    "P11",
+    "P12",
+    "P14",
+    "P18"
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "P13",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

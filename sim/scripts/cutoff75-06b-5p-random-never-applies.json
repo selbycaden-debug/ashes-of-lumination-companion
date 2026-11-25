@@ -1,0 +1,25 @@
+{
+ "name": "cutoff75-06b-5p-random-never-applies",
+ "seed": 11183,
+ "note": "Test rule ON, random 5-player deal: no test-rule reminder (1 Ashen, the cutoff is not used).",
+ "steps": [
+  {
+   "op": "startRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "startRound",
+   "round": 1,
+   "teamCounts": {
+    "Ashen": 1
+   },
+   "remindersForbid": [
+    "Test rule ON"
+   ]
+  }
+ ],
+ "deal": "random",
+ "playerCount": 5,
+ "testCutoff75": true
+}

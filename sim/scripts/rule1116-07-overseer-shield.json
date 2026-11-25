@@ -1,0 +1,147 @@
+{
+ "name": "rule1116-07-overseer-shield",
+ "seed": 1116,
+ "note": "Caden ruling 2026-11-16 #7: the Overseer shield lasts one Ash Fall plus the following Lumination, then it's gone. Ann survives the AF1 kill and the L1 Red Scar kill, then dies to the AF2 kill.",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Scr",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "Ora",
+   "role": "the-vitality-overseer"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge",
+   "ashTouched": true
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Ora",
+     "action": "shield",
+     "target": "Ann"
+    },
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Scr",
+     "action": "dayKill",
+     "target": "Ann"
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Ora",
+     "action": "shield",
+     "target": "Ora"
+    },
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "dead": [],
+   "logIncludes": [
+    "then the shield is gone (Caden)"
+   ]
+  },
+  {
+   "after": "resolveLumination",
+   "round": 1,
+   "dead": [],
+   "livingCount": 8
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 2,
+   "dead": [
+    "Ann"
+   ]
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Ben",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+node_modules/
+dist/
+local-render/node_modules/
+sim/dist/
+sim/.generated/
+sim/out/
+data/
+data/games.json
+test-results/
+playwright-report/
+blob-report/
+.DS_Store
+*.log

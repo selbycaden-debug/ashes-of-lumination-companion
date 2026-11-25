@@ -1,0 +1,54 @@
+{
+ "name": "audit1121-22-d38-judge-never-self",
+ "seed": 11212,
+ "note": "D38: 1 Ashen plus 3 non-Ashen, never the Judge. With 2 Ashen, Jud and 3 other Lumen, the other three must be Ann, Ben and Cy.",
+ "steps": [
+  {
+   "op": "startRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "startRound",
+   "round": 1,
+   "results": {
+    "Jud": "These four players include exactly one Ashen"
+   },
+   "resultForbids": {
+    "Jud": [
+     "Jud,",
+     "Jud."
+    ]
+   },
+   "logIncludes": [
+    "Design default D38"
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Jud",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Cy",
+   "role": "the-failsafe"
+  }
+ ]
+}

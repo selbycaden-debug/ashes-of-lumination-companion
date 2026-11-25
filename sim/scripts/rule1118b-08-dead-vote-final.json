@@ -1,0 +1,195 @@
+{
+ "name": "rule1118b-08-dead-vote-final",
+ "seed": 11182,
+ "note": "Caden (Nov 18 card): dead votes are final. Ann (dead) votes Gus, then tries to switch to Tor; the change is refused. Tor 2 vs Gus 2 is a tie and nobody is executed (if the switch had gone through, Tor would have 3 and be executed).",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Mab"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ben"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Dee"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {
+    "Eli": "Tor",
+    "Fay": "Tor",
+    "Tor": "Gus",
+    "Gus": "Gus"
+   }
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "Eli": "Tor",
+    "Fay": "Tor",
+    "Tor": "SAVE",
+    "Gus": "SAVE",
+    "Ann": "Gus",
+    "Ben": "Gus",
+    "Mab": "SAVE",
+    "Cal": "SAVE",
+    "Dee": "SAVE"
+   }
+  },
+  {
+   "op": "vote",
+   "votes": {
+    "Ann": "Tor"
+   }
+  },
+  {
+   "op": "execute",
+   "target": "auto"
+  }
+ ],
+ "expect": [
+  {
+   "after": "execute",
+   "round": 3,
+   "winner": "",
+   "livingNames": [
+    "Tor",
+    "Eli",
+    "Fay",
+    "Gus"
+   ],
+   "logIncludes": [
+    "Ann's dead vote is final and was not changed (Caden, Nov 18)",
+    "Gus 2",
+    "Tor 2"
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-foresight-elder"
+  },
+  {
+   "name": "Dee",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Eli",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Gus",
+   "role": "the-failsafe"
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Dee",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

@@ -1,0 +1,276 @@
+{
+ "name": "peace1118-03-second-pass",
+ "seed": 11185,
+ "note": "Tor executed DA1 -> Rex (pass 1); AF2 peace; Rex kills Gus AF3. Rex executed DA3 -> Mab (pass 2); AF4 is again a night of peace (Mab's inherited kill paused); Mab kills Fay at AF5.",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Tor"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Rex",
+     "action": "inheritedKill",
+     "target": "Gus"
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Rex",
+     "action": "inheritedKill",
+     "target": "Gus"
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Rex"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Mab",
+     "action": "inheritedKill",
+     "target": "Fay"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Mab",
+     "action": "inheritedKill",
+     "target": "Fay"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveAshFall",
+   "round": 2,
+   "livingCount": 11,
+   "logIncludes": [
+    "The inherited Tyrant kill is paused during the night of peace"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 3,
+   "dead": [
+    "Tor",
+    "Gus"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 3,
+   "winner": "",
+   "logIncludes": [
+    "The kill passes to Mab after a night of peace: no inherited kill on Ash Fall 4; first kill on Ash Fall 5 (Caden, Nov 18) — pass 2 of 2"
+   ],
+   "remindersInclude": [
+    "Mab (The Ashen Mirebane) kills from Ash Fall 5",
+    "Passes used: 2 of 2"
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 4,
+   "dead": [
+    "Tor",
+    "Gus",
+    "Rex"
+   ],
+   "livingCount": 9
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 5,
+   "dead": [
+    "Tor",
+    "Gus",
+    "Rex",
+    "Fay"
+   ],
+   "winner": ""
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Rex",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Eko",
+   "role": "the-echo-thief"
+  },
+  {
+   "name": "Mnd",
+   "role": "the-ashen-mind"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer",
+   "soulbound": "Ben"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge",
+   "soulbound": "Ann"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Gus",
+   "role": "the-foresight-elder"
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

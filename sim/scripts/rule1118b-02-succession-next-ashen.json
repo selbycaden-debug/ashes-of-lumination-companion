@@ -1,0 +1,206 @@
+{
+ "name": "rule1118b-02-succession-next-ashen",
+ "seed": 11182,
+ "note": "Caden (Nov 18): with no Shadow Blade, the Tyrant's nightly kill passes to the next living Ashen and keeps passing until none are left. Tor is executed (DA1): Mab (Mirebane) inherits; Mab is executed (DA2): Mnd (Ashen Mind) inherits and kills Ann at AF3; Mnd is executed (DA3): no Ashen left, Lumen win. (Before: only the Blade, Red Scar and Echo Thief could inherit.) SUPERSEDED by Caden 1:42 PM card: the Ashen Mind cannot inherit, so the game now ends at DA2 when Mab dies (app-default Lumen win).",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Tor"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Mab"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Mnd",
+     "action": "inheritedKill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Mnd"
+  }
+ ],
+ "expect": [
+  {
+   "after": "execute",
+   "round": 1,
+   "winner": "",
+   "logIncludes": [
+    "Tyrant kill will pass to Mab after the night of peace",
+    "pass 1 of 2"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 2,
+   "winner": "lumen",
+   "livingNames": [
+    "Mnd",
+    "Ann",
+    "Ben",
+    "Cal",
+    "Dee",
+    "Eli",
+    "Fay"
+   ],
+   "logIncludes": [
+    "The current inherited killer has died. No eligible heir can take the Tyrant kill",
+    "Lumen victory: the Tyrant kill can't pass to anyone"
+   ],
+   "superseded": [
+    {
+     "field": "succession",
+     "table": "(Nov 18 8:31 ruling) the kill passed on to Mnd (Ashen Mind); Mnd killed Ann at AF3 and was executed at DA3 for the Lumen win.",
+     "now": "Mnd can't inherit; no other heir is alive, so the game ends at DA2 as a Lumen win (app default).",
+     "ruling": "Caden card 2026-11-18 1:42 PM MT (t1538s3754): only Red Scar, then Mirebane, then Echo Thief inherit, at most 2 passes; The Ashen Mind can't inherit; with no eligible heir the game ends (app default: Lumen win)."
+    }
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 3,
+   "superseded": [
+    {
+     "field": "round 3 (not reached)",
+     "table": "AF3 Mnd kills Ann; DA3 Mnd executed, Lumen win",
+     "now": "game ended at DA2",
+     "ruling": "Caden card 2026-11-18 1:42 PM MT (t1538s3754): only Red Scar, then Mirebane, then Echo Thief inherit, at most 2 passes; The Ashen Mind can't inherit; with no eligible heir the game ends (app default: Lumen win)."
+    }
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Mnd",
+   "role": "the-ashen-mind"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Fay",
+   "role": "the-lucid-catalyst"
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Cal",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

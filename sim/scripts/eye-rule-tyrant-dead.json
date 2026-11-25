@@ -1,0 +1,275 @@
+{
+  "name": "eye-rule-tyrant-dead",
+  "seed": 4,
+  "note": "Caden ruling 2026-11-16: once The Ashen Tyrant is dead the Eye has no further checks, so it can never reveal the Shadow Blade (the old current-killer reveal).",
+  "players": [
+    {
+      "name": "Tor",
+      "role": "the-ashen-tyrant"
+    },
+    {
+      "name": "Mab",
+      "role": "the-ashen-mirebane"
+    },
+    {
+      "name": "Bly",
+      "role": "the-shadow-blade"
+    },
+    {
+      "name": "Eve",
+      "role": "the-watching-eye"
+    },
+    {
+      "name": "Xan",
+      "role": "the-parallax",
+      "ashTouched": true
+    },
+    {
+      "name": "Ora",
+      "role": "the-vitality-overseer"
+    },
+    {
+      "name": "Lio",
+      "role": "the-foresight-elder"
+    },
+    {
+      "name": "Vic",
+      "role": "voice-of-the-accord"
+    },
+    {
+      "name": "Ren",
+      "role": "the-lumen-bearer"
+    }
+  ],
+  "steps": [
+    {
+      "op": "startRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "Tor",
+          "action": "kill",
+          "skip": true
+        },
+        {
+          "player": "Mab",
+          "action": "poison",
+          "skip": true
+        },
+        {
+          "player": "Bly",
+          "action": "check",
+          "target": "Ren"
+        },
+        {
+          "player": "Ora",
+          "action": "shield",
+          "target": "Ora"
+        },
+        {
+          "player": "Lio",
+          "action": "check",
+          "target": "Lio"
+        },
+        {
+          "player": "Xan",
+          "action": "parallax",
+          "target": "Xan",
+          "target2": "Ren"
+        },
+        {
+          "player": "Eve",
+          "action": "check",
+          "target": "Ren"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    },
+    {
+      "op": "lumination",
+      "actions": [],
+      "nominations": {
+        "Mab": "Tor",
+        "Bly": "Tor",
+        "Eve": "Tor",
+        "Xan": "Tor",
+        "Ora": "Tor",
+        "Lio": "Tor",
+        "Vic": "Tor",
+        "Ren": "Tor"
+      }
+    },
+    {
+      "op": "resolveLumination"
+    },
+    {
+      "op": "vote",
+      "votes": {
+        "Bly": "Tor",
+        "Eve": "Tor",
+        "Xan": "Tor",
+        "Ora": "Tor",
+        "Lio": "Tor",
+        "Vic": "Tor",
+        "Ren": "Tor",
+        "Tor": "No execution",
+        "Mab": "No execution"
+      }
+    },
+    {
+      "op": "execute",
+      "target": "Tor"
+    },
+    {
+      "op": "nextRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "Ora",
+          "action": "shield",
+          "target": "Ora"
+        },
+        {
+          "player": "Lio",
+          "action": "check",
+          "target": "Lio"
+        },
+        {
+          "player": "Xan",
+          "action": "parallax",
+          "target": "Xan",
+          "target2": "Ren"
+        },
+        {
+          "player": "Eve",
+          "action": "check",
+          "target": "Xan"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    },
+    {
+      "op": "lumination",
+      "actions": []
+    },
+    {
+      "op": "resolveLumination"
+    },
+    {
+      "op": "execute",
+      "target": "No execution"
+    },
+    {
+      "op": "nextRound"
+    },
+    {
+      "op": "ashFall",
+      "actions": [
+        {
+          "player": "Bly",
+          "action": "kill",
+          "target": "Ren"
+        },
+        {
+          "player": "Ora",
+          "action": "shield",
+          "target": "Ora"
+        },
+        {
+          "player": "Lio",
+          "action": "check",
+          "target": "Lio"
+        },
+        {
+          "player": "Xan",
+          "action": "parallax",
+          "target": "Xan",
+          "target2": "Ren"
+        },
+        {
+          "player": "Eve",
+          "action": "check",
+          "target": "Xan"
+        }
+      ]
+    },
+    {
+      "op": "resolveAshFall"
+    }
+  ],
+  "expect": [
+    {
+      "after": "execute",
+      "round": 1,
+      "dead": [
+        "Tor"
+      ]
+    },
+    {
+      "after": "nextRound",
+      "round": 2,
+      "needsAshAction": {
+        "Eve": false
+      },
+      "remindersInclude": [
+        "The Watching Eye (Eve) has no further checks: The Ashen Tyrant is dead."
+      ],
+      "eyeLine": "Watching Eye: no further checks (The Ashen Tyrant is dead)"
+    },
+    {
+      "after": "resolveAshFall",
+      "round": 2,
+      "resultForbids": {
+        "Eve": [
+          "Xan is the Ash Touched",
+          "current killer",
+          "Bly"
+        ]
+      }
+    },
+    {
+      "after": "resolveAshFall",
+      "round": 3,
+      "dead": [
+        "Ren"
+      ],
+      "resultForbids": {
+        "Eve": [
+          "Xan is the Ash Touched",
+          "current killer",
+          "Bly"
+        ]
+      }
+    }
+  ],
+  "atForce": [
+    {
+      "player": "Xan",
+      "rounds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "value": "false",
+      "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+    }
+  ]
+}

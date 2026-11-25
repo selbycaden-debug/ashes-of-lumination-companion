@@ -1,0 +1,127 @@
+{
+ "name": "audit1121-19-d36-red-scar-day-kill-flips-paradox",
+ "seed": 11212,
+ "note": "D36: Red's L2 day kill on Pax is an Ashen kill attempt that reaches it: Pax survives and the coin is flipped (tails: Pax turns Ashen).",
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "No execution"
+  },
+  {
+   "op": "nextRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Mab",
+     "action": "poison",
+     "skip": true
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Red",
+     "action": "dayKill",
+     "target": "Pax"
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination",
+   "flip": "tails"
+  }
+ ],
+ "expect": [
+  {
+   "after": "resolveLumination",
+   "round": 2,
+   "livingCount": 9,
+   "teamCounts": {
+    "Ashen": 4
+   },
+   "logIncludes": [
+    "targeted by the Red Scar's day kill and survives"
+   ]
+  }
+ ],
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Red",
+   "role": "the-red-scar"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Tova",
+   "role": "the-vitality-overseer"
+  },
+  {
+   "name": "Pax",
+   "role": "the-luminary-paradox"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Cy",
+   "role": "the-integrity-warden"
+  },
+  {
+   "name": "Dee",
+   "role": "the-failsafe"
+  },
+  {
+   "name": "Eli",
+   "role": "the-parallax"
+  }
+ ]
+}

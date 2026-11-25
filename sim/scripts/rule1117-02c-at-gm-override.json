@@ -1,0 +1,281 @@
+{
+ "name": "rule1117-02c-at-gm-override",
+ "seed": 1117,
+ "note": "Caden ruling 2026-11-17 with the default 50% chance, but the GM forces each round-1 result (Elder true, Warden false, Parallax true, Eye false, Blade check false, Mind true, Self Known false) and the round-2 Witness true. The Bearer's setup result uses the 50% chance (it is rolled at the deal).",
+ "players": [
+  {
+   "name": "Ann",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Brr",
+   "role": "the-lumen-bearer",
+   "ashTouched": true
+  },
+  {
+   "name": "Ben",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mnd",
+   "role": "the-ashen-mind",
+   "ashTouched": true
+  },
+  {
+   "name": "Bly",
+   "role": "the-shadow-blade",
+   "ashTouched": true
+  },
+  {
+   "name": "Eld",
+   "role": "the-foresight-elder",
+   "ashTouched": true
+  },
+  {
+   "name": "War",
+   "role": "the-integrity-warden",
+   "ashTouched": true
+  },
+  {
+   "name": "Par",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Eye",
+   "role": "the-watching-eye",
+   "ashTouched": true
+  },
+  {
+   "name": "Wit",
+   "role": "the-last-witness",
+   "ashTouched": true
+  },
+  {
+   "name": "Slf",
+   "role": "the-self-known",
+   "ashTouched": true
+  },
+  {
+   "name": "Cal",
+   "role": "the-lumen-guard"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Eld",
+     "action": "check",
+     "target": "Tor"
+    },
+    {
+     "player": "War",
+     "action": "check",
+     "target": "Ann"
+    },
+    {
+     "player": "Par",
+     "action": "parallax",
+     "target": "Tor",
+     "target2": "Mnd"
+    },
+    {
+     "player": "Eye",
+     "action": "check",
+     "target": "Brr"
+    },
+    {
+     "player": "Bly",
+     "action": "check",
+     "target": "Tor"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Slf",
+     "action": "question",
+     "target": "Tor",
+     "role": "the-ashen-tyrant"
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "answerSelfKnown"
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  },
+  {
+   "op": "nextRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "after-deal",
+   "atRolls": [
+    {
+     "name": "Brr",
+     "label": "Lumen Bearer neighbors",
+     "how": "50% chance"
+    }
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "results": {
+    "Eld": "Tor appears Ashen.",
+    "War": "Ann's condition for the following day: Ash Touched.",
+    "Par": "Tor and Mnd are on the same team.",
+    "Eye": "Brr is not the Ash Touched player.",
+    "Bly": "Tor is not The Ashen Tyrant."
+   },
+   "atRolls": [
+    {
+     "name": "Eld",
+     "lie": false,
+     "how": "GM override"
+    },
+    {
+     "name": "War",
+     "lie": true,
+     "how": "GM override"
+    },
+    {
+     "name": "Par",
+     "lie": false,
+     "how": "GM override"
+    },
+    {
+     "name": "Eye",
+     "lie": true,
+     "how": "GM override"
+    },
+    {
+     "name": "Bly",
+     "lie": true,
+     "how": "GM override"
+    },
+    {
+     "name": "Mnd",
+     "label": "Ashen Mind snapshot",
+     "lie": false,
+     "how": "GM override"
+    }
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 1,
+   "results": {
+    "Slf": "Is Tor The Ashen Tyrant? — No."
+   },
+   "atRolls": [
+    {
+     "name": "Slf",
+     "lie": true,
+     "how": "GM override"
+    }
+   ]
+  },
+  {
+   "after": "nextRound",
+   "round": 2,
+   "results": {
+    "Wit": "was on the Lumen team."
+   },
+   "atRolls": [
+    {
+     "name": "Wit",
+     "round": 2,
+     "lie": false,
+     "how": "GM override"
+    }
+   ]
+  }
+ ],
+ "atFalsePct": 50,
+ "atForce": [
+  {
+   "player": "Eld",
+   "rounds": [
+    1
+   ],
+   "value": "true"
+  },
+  {
+   "player": "War",
+   "rounds": [
+    1
+   ],
+   "value": "false"
+  },
+  {
+   "player": "Par",
+   "rounds": [
+    1
+   ],
+   "value": "true"
+  },
+  {
+   "player": "Eye",
+   "rounds": [
+    1
+   ],
+   "value": "false"
+  },
+  {
+   "player": "Bly",
+   "rounds": [
+    1
+   ],
+   "value": "false"
+  },
+  {
+   "player": "Mnd",
+   "rounds": [
+    1
+   ],
+   "value": "true"
+  },
+  {
+   "player": "Slf",
+   "rounds": [
+    1
+   ],
+   "value": "false"
+  },
+  {
+   "player": "Wit",
+   "rounds": [
+    2
+   ],
+   "value": "true"
+  }
+ ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "civic-4-no-exec",
+  "seed": 1,
+  "players": [
+    { "name": "Mira", "role": "the-ashen-tyrant" },
+    { "name": "Wren", "role": "the-civic-luminary" },
+    { "name": "Ellis", "role": "the-vitality-overseer" },
+    { "name": "Theo", "role": "the-lumen-bearer" },
+    { "name": "Kira", "role": "the-foresight-elder" }
+  ],
+  "steps": [
+    { "op": "startRound" },
+    {
+      "op": "ashFall",
+      "actions": [
+        { "player": "Mira", "action": "kill", "target": "Ellis" }
+      ]
+    },
+    { "op": "resolveAshFall" },
+    { "op": "lumination", "actions": [] },
+    { "op": "resolveLumination" },
+    { "op": "nominate", "nominees": ["Mira", "Wren"] },
+    {
+      "op": "vote",
+      "votes": {
+        "Mira": "Wren",
+        "Wren": "Mira",
+        "Theo": "Mira",
+        "Kira": "Wren"
+      }
+    },
+    { "op": "execute", "target": "auto" },
+    { "op": "nextRound" }
+  ]
+}

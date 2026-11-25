@@ -1,0 +1,132 @@
+{
+ "name": "rule1116-09-soulbound",
+ "seed": 1116,
+ "note": "Caden ruling 2026-11-16 #9: Soulbound links two players; if one dies, both die. Anyone can be Soulbound (here the Tyrant): the linked Tyrant death runs succession. Players are not told (pending Caden).",
+ "players": [
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant",
+   "soulbound": "Ann"
+  },
+  {
+   "name": "Mab",
+   "role": "the-ashen-mirebane"
+  },
+  {
+   "name": "Ann",
+   "role": "the-lumen-bearer",
+   "soulbound": "Tor"
+  },
+  {
+   "name": "Ben",
+   "role": "the-quadrant-judge",
+   "ashTouched": true
+  },
+  {
+   "name": "Cal",
+   "role": "the-parallax",
+   "soulbound": "Dee"
+  },
+  {
+   "name": "Dee",
+   "role": "the-integrity-warden",
+   "soulbound": "Cal"
+  },
+  {
+   "name": "Eli",
+   "role": "the-failsafe"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "target": "Ann"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [],
+   "nominations": {}
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  }
+ ],
+ "expect": [
+  {
+   "after": "after-deal",
+   "visibleForbids": {
+    "Cal": [
+     "Soulbound"
+    ],
+    "Dee": [
+     "Soulbound"
+    ],
+    "Ann": [
+     "Soulbound"
+    ]
+   }
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "dead": [
+    "Ann",
+    "Tor"
+   ],
+   "logIncludes": [
+    "dies with their Soulbound partner",
+    "A night of peace follows"
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 1,
+   "dead": [
+    "Ann",
+    "Tor",
+    "Cal",
+    "Dee"
+   ],
+   "livingCount": 3,
+   "winner": ""
+  }
+ ],
+ "atForce": [
+  {
+   "player": "Ben",
+   "rounds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+   ],
+   "value": "false",
+   "note": "Caden 2026-11-17: Ash Touched info may be true or false. Forced to the table's result (false) for every round so the replay is deterministic."
+  }
+ ]
+}

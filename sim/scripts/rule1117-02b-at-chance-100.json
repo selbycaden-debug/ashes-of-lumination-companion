@@ -1,0 +1,224 @@
+{
+ "name": "rule1117-02b-at-chance-100",
+ "seed": 1117,
+ "note": "Caden ruling 2026-11-17: with the chance at 100%, every Ash Touched result is false. The Eye checks the real Ash Touched Brr and is told it missed, so it keeps hunting.",
+ "players": [
+  {
+   "name": "Ann",
+   "role": "the-quadrant-judge"
+  },
+  {
+   "name": "Brr",
+   "role": "the-lumen-bearer",
+   "ashTouched": true
+  },
+  {
+   "name": "Ben",
+   "role": "the-lucid-catalyst"
+  },
+  {
+   "name": "Tor",
+   "role": "the-ashen-tyrant"
+  },
+  {
+   "name": "Mnd",
+   "role": "the-ashen-mind",
+   "ashTouched": true
+  },
+  {
+   "name": "Bly",
+   "role": "the-shadow-blade",
+   "ashTouched": true
+  },
+  {
+   "name": "Eld",
+   "role": "the-foresight-elder",
+   "ashTouched": true
+  },
+  {
+   "name": "War",
+   "role": "the-integrity-warden",
+   "ashTouched": true
+  },
+  {
+   "name": "Par",
+   "role": "the-parallax",
+   "ashTouched": true
+  },
+  {
+   "name": "Eye",
+   "role": "the-watching-eye",
+   "ashTouched": true
+  },
+  {
+   "name": "Wit",
+   "role": "the-last-witness",
+   "ashTouched": true
+  },
+  {
+   "name": "Slf",
+   "role": "the-self-known",
+   "ashTouched": true
+  },
+  {
+   "name": "Cal",
+   "role": "the-lumen-guard"
+  }
+ ],
+ "steps": [
+  {
+   "op": "startRound"
+  },
+  {
+   "op": "ashFall",
+   "actions": [
+    {
+     "player": "Tor",
+     "action": "kill",
+     "skip": true
+    },
+    {
+     "player": "Eld",
+     "action": "check",
+     "target": "Tor"
+    },
+    {
+     "player": "War",
+     "action": "check",
+     "target": "Ann"
+    },
+    {
+     "player": "Par",
+     "action": "parallax",
+     "target": "Tor",
+     "target2": "Mnd"
+    },
+    {
+     "player": "Eye",
+     "action": "check",
+     "target": "Brr"
+    },
+    {
+     "player": "Bly",
+     "action": "check",
+     "target": "Tor"
+    }
+   ]
+  },
+  {
+   "op": "resolveAshFall"
+  },
+  {
+   "op": "lumination",
+   "actions": [
+    {
+     "player": "Slf",
+     "action": "question",
+     "target": "Tor",
+     "role": "the-ashen-tyrant"
+    }
+   ],
+   "nominations": {}
+  },
+  {
+   "op": "answerSelfKnown"
+  },
+  {
+   "op": "resolveLumination"
+  },
+  {
+   "op": "execute",
+   "target": "Cal"
+  },
+  {
+   "op": "nextRound"
+  }
+ ],
+ "expect": [
+  {
+   "after": "after-deal",
+   "results": {
+    "Brr": "do not share alignment."
+   },
+   "atRolls": [
+    {
+     "name": "Brr",
+     "label": "Lumen Bearer neighbors",
+     "lie": true,
+     "how": "100% chance"
+    }
+   ]
+  },
+  {
+   "after": "resolveAshFall",
+   "round": 1,
+   "results": {
+    "Eld": "Tor appears Lumen.",
+    "War": "Ann's condition for the following day: Ash Touched.",
+    "Par": "Tor and Mnd are not on the same team.",
+    "Eye": "Brr is not the Ash Touched player.",
+    "Bly": "Tor is not The Ashen Tyrant."
+   },
+   "atRolls": [
+    {
+     "name": "Eld",
+     "label": "Foresight Elder check",
+     "lie": true,
+     "how": "100% chance"
+    },
+    {
+     "name": "War",
+     "label": "Integrity Warden check",
+     "lie": true,
+     "how": "100% chance"
+    },
+    {
+     "name": "Par",
+     "label": "Parallax check",
+     "lie": true,
+     "how": "100% chance"
+    },
+    {
+     "name": "Eye",
+     "label": "Watching Eye check",
+     "lie": true,
+     "how": "100% chance"
+    },
+    {
+     "name": "Bly",
+     "label": "Shadow Blade Tyrant check",
+     "lie": true,
+     "how": "100% chance"
+    },
+    {
+     "name": "Mnd",
+     "label": "Ashen Mind snapshot",
+     "lie": true
+    }
+   ]
+  },
+  {
+   "after": "execute",
+   "round": 1,
+   "results": {
+    "Slf": "Is Tor The Ashen Tyrant? — No."
+   }
+  },
+  {
+   "after": "nextRound",
+   "round": 2,
+   "results": {
+    "Wit": "Dawn Accord was on the"
+   },
+   "resultForbids": {
+    "Wit": [
+     "was on the Lumen team."
+    ]
+   },
+   "needsAshAction": {
+    "Eye": true
+   }
+  }
+ ],
+ "atFalsePct": 100
+}
