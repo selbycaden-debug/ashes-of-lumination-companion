@@ -705,7 +705,8 @@ const COMPOSITION: CompBand[] = [
   { min: 7, max: 9, ashenMin: 2, ashenMax: 2, unalignedMin: 0, unalignedMax: 1, ashenDefault: () => 2, unalignedDefault: (n: number) => (n === 7 ? 0 : 1) },
   { min: 10, max: 12, ashenMin: 3, ashenMax: 3, unalignedMin: 1, unalignedMax: 1, ashenDefault: () => 3, unalignedDefault: () => 1 },
   { min: 13, max: 15, ashenMin: 3, ashenMax: 4, unalignedMin: 1, unalignedMax: 1, ashenDefault: (n: number) => (n >= 14 ? 4 : 3), unalignedDefault: () => 1 },
-  { min: 16, max: 20, ashenMin: 4, ashenMax: 4, unalignedMin: 1, unalignedMax: 2, ashenDefault: () => 4, unalignedDefault: (n: number) => (n >= 18 ? 2 : 1) },
+  // Caden: 16–20 is up to 4 Ashen, so the range is 3–4. The GM picks 3 or 4. Leaving it unset still deals 4.
+  { min: 16, max: 20, ashenMin: 3, ashenMax: 4, unalignedMin: 1, unalignedMax: 2, ashenDefault: () => 4, unalignedDefault: (n: number) => (n >= 18 ? 2 : 1) },
 ];
 
 function compositionBand(n: number): CompBand | null {
@@ -718,7 +719,7 @@ function rangeText(min: number, max: number): string {
 
 function ashenCount(n: number, pick?: number): number {
   const band = compositionBand(n);
-  if (band && band.ashenMin !== band.ashenMax && (pick === band.ashenMin || pick === band.ashenMax)) return pick;
+  if (band && band.ashenMin !== band.ashenMax && typeof pick === "number" && pick >= band.ashenMin && pick <= band.ashenMax) return pick;
   if (band) return band.ashenDefault(n);
   if (n <= 6) return 1;
   if (n <= 9) return 2;
@@ -912,7 +913,7 @@ function distributionLabel(n: number, unalignedPick?: number, rechargeAt?: numbe
   if (n <= 6) parts.push("Caden (Nov 18): 5–6 players have 1 Ashen. No Unaligned at 5–6 (Design default D52, Nov 21 audit).");
   if (n >= 7 && n <= 9) parts.push("Caden: Unaligned at 7–9 is a 0–1 range with 2 Ashen; no exact number. The GM picks 0, 1, or random (default: random).");
   if (n >= 13 && n <= 15) parts.push("Ashen at 13–15 is 3–4; the GM picks inside the range (Design default D52, Nov 21 audit). The random deal uses 3 at 13 and 4 at 14–15.");
-  if (n >= 16) parts.push("Unaligned at 16–20 is 1–2; the GM picks inside the range (Design default D52, Nov 21 audit). The random deal uses 1 at 16–17 and 2 at 18–20.");
+  if (n >= 16) parts.push("Caden: Ashen at 16–20 is 3–4 (up to 4); the GM picks the exact number. The chart default deal uses 4. Unaligned at 16–20 is 1–2; the GM picks inside the range (Design default D52, Nov 21 audit). The random deal uses 1 at 16–17 and 2 at 18–20.");
   void rechargeAt;
   parts.push(
     "Charged roles (The Self Known, Sunmark Shooter, The Necroreclaimer, The Red Scar) start with 1 use and hold at most 1. Caden's 5-player rule: a used ability regains its use only after 5 more players have died since it was used. This replaces the old recharge threshold and the 15/10/5 chart. Every death counts: kills, executions, poison, Sunmark shots and Soulbound deaths (Caden, Nov 17–18). 5 deaths at every player count, small games included (Caden, Nov 17 card).",

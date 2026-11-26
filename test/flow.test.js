@@ -23,7 +23,7 @@ const CHART = [
   { n: [7, 9], ashen: [2, 2], unaligned: [0, 1], ashenAt: { 7: 2, 8: 2, 9: 2 }, unalignedAt: { 7: 0, 8: 1, 9: 1 } },
   { n: [10, 12], ashen: [3, 3], unaligned: [1, 1], ashenAt: { 10: 3, 11: 3, 12: 3 }, unalignedAt: { 10: 1, 11: 1, 12: 1 } },
   { n: [13, 15], ashen: [3, 4], unaligned: [1, 1], ashenAt: { 13: 3, 14: 4, 15: 4 }, unalignedAt: { 13: 1, 14: 1, 15: 1 } },
-  { n: [16, 20], ashen: [4, 4], unaligned: [1, 2], ashenAt: { 16: 4, 17: 4, 18: 4, 19: 4, 20: 4 }, unalignedAt: { 16: 1, 17: 1, 18: 2, 19: 2, 20: 2 } },
+  { n: [16, 20], ashen: [3, 4], unaligned: [1, 2], ashenAt: { 16: 4, 17: 4, 18: 4, 19: 4, 20: 4 }, unalignedAt: { 16: 1, 17: 1, 18: 2, 19: 2, 20: 2 } },
 ];
 
 test("composition config is the Caden chart and the deal defaults stay inside it", () => {
@@ -48,6 +48,10 @@ test("composition config is the Caden chart and the deal defaults stay inside it
   assert.equal(ashenCount(14), 4);
   assert.equal(ashenCount(14, 3), 3);
   assert.equal(ashenCount(13, 4), 4);
+  assert.equal(ashenCount(16), 4);
+  assert.equal(ashenCount(16, 3), 3);
+  assert.equal(ashenCount(20, 3), 3);
+  assert.equal(ashenCount(20, 2), 4);
   assert.equal(unalignedCount(18, -1, 1), 1);
   assert.equal(unalignedCount(16, -1, 2), 2);
   const thirteen = Array.from({ length: 13 }, (_, i) => "N" + i);
@@ -56,12 +60,14 @@ test("composition config is the Caden chart and the deal defaults stay inside it
   assert.equal(applyDeal(blankState(), thirteen).dealtCounts.ashen, 3);
   assert.equal(applyDeal({ ...blankState(), unalignedWide: 1 }, eighteen).dealtCounts.unaligned, 1);
   assert.equal(applyDeal(blankState(), eighteen).dealtCounts.unaligned, 2);
+  assert.equal(applyDeal({ ...blankState(), ashenPick: 3 }, eighteen).dealtCounts.ashen, 3);
+  assert.equal(applyDeal(blankState(), eighteen).dealtCounts.ashen, 4);
 
   const book = rulebookFor(16, null);
   assert.equal(book.headline, "The main goal is always to kill the Ashen Tyrant.");
-  assert.equal(book.band.ashen, "4");
+  assert.equal(book.band.ashen, "3\u20134");
   assert.equal(book.band.unaligned, "1\u20132");
-  assert.equal(book.band.lumen, "10\u201311");
+  assert.equal(book.band.lumen, "10\u201312");
   assert.equal(book.dealt, null);
   assert.match(book.goals.find((goal) => goal.side === "Lumen").text, /^Lumen victory: all Ashen and The Shadow Blade are eliminated\.$/);
   assert.match(book.goals.find((goal) => goal.side === "Ashen").text, /reached parity/);
