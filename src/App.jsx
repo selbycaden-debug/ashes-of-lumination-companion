@@ -312,11 +312,11 @@ function Setup({ state, act }) {
           <option value="1">1 Unaligned</option>
         </select>
       </label>
-      {count >= 13 && (
+      {count >= 13 && count <= 15 && (
         <label className="grid gap-1 text-sm">
-          Ashen at {count <= 15 ? "13–15" : "16–20"} players
+          Ashen at 13–15 players
           <select data-testid="ashen-pick" className="tap rounded-sm border border-[#8a7038] bg-[#07070a] px-3" value={String(state.settings.ashenPick ?? -1)} onChange={(e) => act({ type: "settings", ashenPick: Number(e.target.value) })}>
-            <option value="-1">{count <= 15 ? "Chart default (3 at 13, 4 at 14–15)" : "Chart default (4)"}</option>
+            <option value="-1">Chart default (3 at 13, 4 at 14–15)</option>
             <option value="3">3 Ashen</option>
             <option value="4">4 Ashen</option>
           </select>
