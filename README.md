@@ -24,14 +24,4 @@ npm run test:e2e  # the same loop in phone-sized browser sessions
 
 The browser test needs Chromium: `npx playwright install chromium`.
 
-## Ahsoka
-
-On the GM screen, open **Ahsoka**. That panel shows the per-game key, the URLs, and a block you can paste to Ahsoka. The key only answers for that game. Send it as `X-Agent-Key`.
-
-- `GET /api/agent/:code/state` — GM state, log, and a short text summary as JSON
-- `GET /api/agent/:code/summary` — the summary as plain text
-- `GET /api/agent/:code/chat?playerId=` — private thread with one player
-- `POST /api/agent/:code/chat` — `{ "playerId", "text" }`, shown as **Ahsoka (GM)**
-- `POST /api/agent/:code/action` — the same GM actions the screen can take, such as `{ "type": "resolve" }`
-
-Hosting steps are in [DEPLOY.md](DEPLOY.md).
+There is no agent API. The GM talks to each player in a private thread on the table. Hosting steps are in [DEPLOY.md](DEPLOY.md).

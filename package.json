@@ -9,7 +9,7 @@
     "build": "node sim/build-engine.mjs && vite build",
     "start": "npm run build && node server/index.js",
     "dev": "node server/index.js",
-    "test": "node sim/build-engine.mjs && node test/regression.mjs && node --test test/live.test.js test/flow.test.js",
+    "test": "node sim/build-engine.mjs && node test/regression.mjs && node --test test/live.test.js test/flow.test.js test/batch.test.js",
     "test:e2e": "playwright test"
   },
   "dependencies": {

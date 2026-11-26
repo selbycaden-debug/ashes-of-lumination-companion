@@ -51,4 +51,4 @@ Restart=on-failure
 
 ## What you do not need
 
-No database, no separate client host, and no API keys. Ahsoka's key is created with each game and shown on the GM screen.
+No database, no separate client host, and no API keys.

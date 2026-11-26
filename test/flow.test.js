@@ -132,6 +132,7 @@ function wsState(port, token) {
 
 async function submitMenus(port, token, view) {
   for (const item of view.menu || []) {
+    if (item.kind === "note") continue;
     if (item.kind === "invite") {
       const res = await call(port, "/api/action", { token, body: { type: "invite-response", accept: false } });
       assert.equal(res.status, 200, res.data.error || "");
@@ -205,7 +206,8 @@ async function submitMenus(port, token, view) {
 async function playTable(port, count) {
   const created = await call(port, "/api/games", { body: { gmName: "Caden" } });
   assert.equal(created.status, 200);
-  const { code, gmToken, agentKey } = created.data;
+  const { code, gmToken } = created.data;
+  assert.equal(created.data.agentKey, undefined);
   const players = [];
   for (let i = 1; i <= count; i += 1) {
     const joined = await call(port, `/api/games/${code}/join`, { body: { name: "P" + String(i).padStart(2, "0") } });
@@ -233,7 +235,7 @@ async function playTable(port, count) {
   assert.equal(firstMsg.state.you.name, "P01");
   firstSocket.ws.close();
 
-  assert.equal((await gm({ type: "settings", cutoff: false })).status, 200);
+  assert.equal((await gm({ type: "settings", cutoff: false, automate: true })).status, 200);
   const dealt = await gm({ type: "deal" });
   assert.equal(dealt.status, 200, dealt.data.error || "");
   const roles = dealt.data.state.players.map((p) => p.roleId);
@@ -271,22 +273,31 @@ async function playTable(port, count) {
   for (let guard = 0; guard < 80 && state.phase !== "ended" && !state.winner; guard += 1) {
     phases.push(state.phase);
     if (state.block?.type === "coin") {
-      const flipped = await call(port, `/api/agent/${code}/action`, { key: agentKey, body: { type: "coin", result: guard % 2 ? "heads" : "tails" } });
+      const flipped = await gm({ type: "coin", result: guard % 2 ? "heads" : "tails" });
       assert.equal(flipped.status, 200, flipped.data.error || "");
       state = flipped.data.state;
       continue;
     }
-    for (const player of players) {
-      const view = await call(port, "/api/state", { token: player.token });
-      assert.equal(view.status, 200);
-      assert.equal(view.data.kind, "player");
-      assert.equal(view.data.agentKey, undefined);
-      await submitMenus(port, player.token, view.data);
+    if (state.phase === "dawnAccord") {
+      for (const player of players) {
+        const view = await call(port, "/api/state", { token: player.token });
+        await submitMenus(port, player.token, { ...view.data, menu: (view.data.menu || []).filter((item) => item.id === "nomination") });
+      }
+      for (const player of players) {
+        const view = await call(port, "/api/state", { token: player.token });
+        await submitMenus(port, player.token, { ...view.data, menu: (view.data.menu || []).filter((item) => item.id === "vote") });
+      }
+    } else {
+      for (const player of players) {
+        const view = await call(port, "/api/state", { token: player.token });
+        assert.equal(view.status, 200);
+        assert.equal(view.data.kind, "player");
+        assert.equal(view.data.agentKey, undefined);
+        await submitMenus(port, player.token, view.data);
+      }
     }
     const before = state.phase;
-    const advanced = guard % 4 === 3
-      ? await call(port, `/api/agent/${code}/action`, { key: agentKey, body: { type: "resolve" } })
-      : await gm({ type: "resolve" });
+    const advanced = await gm({ type: "resolve" });
     assert.equal(advanced.status, 200, advanced.data.error || before);
     state = advanced.data.state;
     if (state.players.some((p) => !p.alive)) sawDeath = true;
@@ -301,19 +312,18 @@ async function playTable(port, count) {
   } else {
     assert.ok(phases.includes("lumination") && phases.includes("dawnAccord"), phases.join(",") || "no phases");
   }
-  const summary = await call(port, `/api/agent/${code}/summary`, { key: agentKey });
-  assert.equal(summary.status, 200);
-  assert.match(summary.data, /Ashes of Lumination/);
-  const denied = await call(port, `/api/agent/${code}/state`, { key: "nope" });
-  assert.equal(denied.status, 401);
+  const gone = await call(port, `/api/agent/${code}/state`);
+  assert.equal(gone.status, 404);
   const ava = state.players[0];
   if (ava) {
-    const posted = await call(port, `/api/agent/${code}/chat`, { key: agentKey, body: { playerId: ava.id, text: "Ahsoka is here." } });
+    const posted = await call(port, "/api/action", { token: players[0].token, body: { type: "chat", channel: "gm", text: "GM, it is P01." } });
     assert.equal(posted.status, 200);
     const seat = await call(port, "/api/state", { token: players[0].token });
-    assert.ok(seat.data.chats.some((c) => c.text.includes("Ahsoka is here.")));
+    assert.ok(seat.data.chats.some((c) => c.text.includes("P01")));
     const other = await call(port, "/api/state", { token: players[1].token });
-    assert.equal(other.data.chats.some((c) => c.text.includes("Ahsoka is here.")), false);
+    assert.equal(other.data.chats.some((c) => c.text.includes("P01")), false);
+    const team = await call(port, "/api/action", { token: players[0].token, body: { type: "chat", channel: "ashen", text: "Ashen only." } });
+    assert.equal(team.status, 400);
   }
   if (state.winner) {
     assert.ok(["lumen", "ashen", "syndic", "shadow"].includes(state.winner));

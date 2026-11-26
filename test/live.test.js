@@ -18,12 +18,13 @@ async function call(port, path, { token, key, body } = {}) {
   return { status: res.status, data };
 }
 
-test("a GM and five players finish a night, a day, a vote, and an Ahsoka chat", async () => {
+test("a GM and five players finish a night, a day, and a vote", async () => {
   const { port, close } = await start(0);
   try {
     const created = await call(port, "/api/games", { body: { gmName: "Caden" } });
     assert.equal(created.status, 200);
-    const { code, gmToken, agentKey } = created.data;
+    const { code, gmToken } = created.data;
+    assert.equal(created.data.agentKey, undefined);
     const players = [];
     for (const name of ["Ava", "Ben", "Cara", "Dee", "Eli"]) {
       const joined = await call(port, `/api/games/${code}/join`, { body: { name } });
@@ -32,7 +33,7 @@ test("a GM and five players finish a night, a day, a vote, and an Ahsoka chat", 
     }
 
     const gm = (body) => call(port, "/api/action", { token: gmToken, body });
-    assert.equal((await gm({ type: "settings", cutoff: false })).status, 200);
+    assert.equal((await gm({ type: "settings", cutoff: false, automate: true })).status, 200);
     assert.equal((await gm({ type: "autofill" })).status, 200);
     const dealt = await gm({ type: "deal" });
     assert.equal(dealt.status, 200, dealt.data.error || "");
@@ -71,15 +72,28 @@ test("a GM and five players finish a night, a day, a vote, and an Ahsoka chat", 
     assert.equal(state.phase, "lumination");
     for (const player of players) {
       const mine = (await call(port, "/api/state", { token: player.token })).data.you;
-      const other = state.players.find((p) => p.alive && p.id !== mine.id);
+      const tooSoon = await call(port, "/api/action", { token: player.token, body: { type: "submit", kind: "nomination", targetId: mine.id } });
+      assert.equal(tooSoon.status, 400);
       await call(port, "/api/action", { token: player.token, body: { type: "submit", kind: "statement", text: `${mine.name} speaks.` } });
-      await call(port, "/api/action", { token: player.token, body: { type: "submit", kind: "nomination", targetId: other.id } });
     }
     state = (await gm({ type: "resolve" })).data.state;
     assert.equal(state.phase, "dawnAccord");
+    for (const player of players) {
+      const mine = (await call(port, "/api/state", { token: player.token })).data.you;
+      const other = state.players.find((p) => p.alive && p.id !== mine.id);
+      const nominated = await call(port, "/api/action", { token: player.token, body: { type: "submit", kind: "nomination", targetId: other.id } });
+      assert.equal(nominated.status, 200, nominated.data.error || "");
+      const again = await call(port, "/api/action", { token: player.token, body: { type: "submit", kind: "nomination", targetId: mine.id } });
+      assert.equal(again.status, 400);
+      assert.match(again.data.error, /Nomination submitted/);
+    }
+    state = (await call(port, "/api/state", { token: gmToken })).data;
     assert.ok(state.ballot.length > 0);
     for (const player of players) {
-      await call(port, "/api/action", { token: player.token, body: { type: "vote", choice: state.ballot[0].id } });
+      const voted = await call(port, "/api/action", { token: player.token, body: { type: "vote", choice: state.ballot[0].id } });
+      assert.equal(voted.status, 200, voted.data.error || "");
+      const changed = await call(port, "/api/action", { token: player.token, body: { type: "vote", choice: "NO_EXEC" } });
+      assert.equal(changed.status, 400);
     }
     state = (await gm({ type: "resolve" })).data.state;
     assert.ok(state.phase === "ashFall" || state.phase === "ended");
@@ -87,29 +101,13 @@ test("a GM and five players finish a night, a day, a vote, and an Ahsoka chat", 
     await call(port, "/api/action", { token: players[0].token, body: { type: "chat", channel: "gm", text: "GM, it is Ava." } });
     const gmView = await call(port, "/api/state", { token: gmToken });
     assert.ok(gmView.data.chats.some((c) => c.text.includes("Ava")));
-
-    const agent = await call(port, `/api/agent/${code}/state`, { key: agentKey });
-    assert.equal(agent.status, 200);
-    assert.match(agent.data.summary, /Phase/);
-    assert.ok(agent.data.log.length > 0);
-    assert.ok(agent.data.state.players.some((p) => p.roleId === "the-ashen-tyrant"));
-    const denied = await call(port, `/api/agent/${code}/state`, { key: "not-this-game" });
-    assert.equal(denied.status, 401);
-
-    const avaId = state.players.find((p) => p.name === "Ava").id;
-    const posted = await call(port, `/api/agent/${code}/chat`, {
-      key: agentKey,
-      body: { playerId: avaId, text: "Ahsoka checking in." },
-    });
-    assert.equal(posted.status, 200);
-    const ava = await call(port, "/api/state", { token: players[0].token });
-    assert.ok(ava.data.chats.some((c) => c.name === "Ahsoka (GM)" && c.text.includes("checking")));
+    assert.ok(gmView.data.players.every((p) => p.name));
     const ben = await call(port, "/api/state", { token: players[1].token });
-    assert.equal(ben.data.chats.some((c) => c.text.includes("checking")), false);
-
-    const summary = await call(port, `/api/agent/${code}/summary`, { key: agentKey });
-    assert.equal(summary.status, 200);
-    assert.match(summary.data, /Ashes of Lumination/);
+    assert.equal(ben.data.chats.some((c) => c.text.includes("Ava")), false);
+    const team = await call(port, "/api/action", { token: players[0].token, body: { type: "chat", channel: "ashen", text: "secret" } });
+    assert.equal(team.status, 400);
+    const agent = await call(port, `/api/agent/${code}/state`);
+    assert.equal(agent.status, 404);
   } finally {
     await close();
   }

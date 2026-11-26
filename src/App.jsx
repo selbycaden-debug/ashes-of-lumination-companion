@@ -238,6 +238,7 @@ function GmScreen({ state, act, error, connected, onLeave }) {
       ) : (
         <>
           <PhaseBar state={state} act={act} />
+          {state.phase === "ashFall" && <AshfallPanel state={state} act={act} />}
           {state.phase === "setup" && <SoulboundCard state={state} act={act} />}
           {state.reminders?.length > 0 && (
             <section className="panel mb-4 p-4 text-sm">
@@ -249,16 +250,16 @@ function GmScreen({ state, act, error, connected, onLeave }) {
           )}
           <PublicNotices state={state} />
           <div className="mb-4 grid grid-cols-4 gap-2 text-sm">
-            {["table", "chat", "log", "ahsoka"].map((id) => (
+            {["table", "chat", "log", "voting"].map((id) => (
               <button key={id} className={`tap rounded-xl border border-[#4a342c] ${tab === id ? "bg-[#e6c27a] text-[#1a100e]" : ""}`} onClick={() => setTab(id)}>
-                {id === "ahsoka" ? "Ahsoka" : id[0].toUpperCase() + id.slice(1)}
+                {id[0].toUpperCase() + id.slice(1)}
               </button>
             ))}
           </div>
           {tab === "table" && <GmTable state={state} act={act} />}
           {tab === "chat" && <GmChat state={state} act={act} />}
-          {tab === "log" && <LogList lines={state.log} />}
-          {tab === "ahsoka" && <Ahsoka state={state} />}
+          {tab === "log" && <GmLog state={state} />}
+          {tab === "voting" && <Voting state={state} act={act} />}
         </>
       )}
     </div>
@@ -332,6 +333,10 @@ function Setup({ state, act }) {
           </select>
         </label>
       )}
+      <label className="flex items-start gap-3 text-sm">
+        <input data-testid="toggle-automate" type="checkbox" className="mt-1 h-5 w-5" checked={!!state.settings?.automate} onChange={(e) => act({ type: "settings", automate: e.target.checked })} />
+        <span>Automation. Off, you confirm the Dawn Accord execution yourself. On, resolving applies the vote leader.</span>
+      </label>
       {count >= 7 ? (
         <Toggle label="Test rule: 75% succession cutoff (off by default; for playtesting, not a core rule)." checked={state.settings.testCutoff75} testid="toggle-cutoff" onChange={(testCutoff75) => act({ type: "settings", testCutoff75 })} />
       ) : (
@@ -368,20 +373,21 @@ function Toggle({ label, checked, onChange, testid }) {
 }
 
 function PhaseBar({ state, act }) {
-  const label = state.phase === "setup" ? "Begin Ash Fall" : state.phase === "ashFall" ? (state.nightOfPeace ? "Resolve the night of peace" : "Resolve Ash Fall") : state.phase === "lumination" ? "Resolve Lumination" : state.phase === "dawnAccord" ? "Resolve the Dawn Accord" : "Game over";
+  const manualDawn = state.phase === "dawnAccord" && !state.settings?.automate;
+  const label = state.phase === "setup" ? "Begin Ash Fall" : state.phase === "ashFall" ? (state.nightOfPeace ? "Resolve the night of peace" : "Resolve night") : state.phase === "lumination" ? "Resolve Lumination" : state.phase === "dawnAccord" ? "Resolve the Dawn Accord" : "Game over";
   const needSoul = state.phase === "setup" && state.soulboundRequired && !state.soulboundPlaced;
   return (
     <div className="panel mb-4 flex flex-wrap items-center justify-between gap-3 p-4">
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-[#e6c27a]">{state.nightOfPeace ? "Night of peace" : labelPhase(state)}</p>
-        <p className="text-sm text-[#d9c7b6]">{state.winReason || (needSoul ? "Place a Soulbound pair, then begin Ash Fall." : "Every action is waiting on you.")}</p>
+        <p className="text-sm text-[#d9c7b6]">{state.winReason || (needSoul ? "Place a Soulbound pair, then begin Ash Fall." : manualDawn ? "Choose the execution on the Voting tab. Nothing is applied until you resolve." : "Every action is waiting on you.")}</p>
         {state.tallies?.length > 0 && (
           <ul className="mt-2 text-sm" data-testid="tallies">
             {state.tallies.map((row) => <li key={row.id}>{row.name}: {row.votes}</li>)}
           </ul>
         )}
       </div>
-      {state.phase !== "ended" && state.winner == null && !state.block && !needSoul && (
+      {state.phase !== "ended" && state.winner == null && !state.block && !needSoul && !manualDawn && (
         <button data-testid="advance" className="tap rounded-xl bg-[#e6c27a] px-4 font-semibold text-[#1a100e]" onClick={() => act({ type: "resolve" })}>{label}</button>
       )}
       {state.block?.type === "coin" && (
@@ -466,14 +472,18 @@ function GmChat({ state, act }) {
   const [playerId, setPlayerId] = useState(state.players[0]?.id || "");
   const [text, setText] = useState("");
   const thread = state.chats.filter((c) => c.channel === "gm" && c.playerId === playerId);
+  const current = state.players.find((p) => p.id === playerId);
   return (
     <section className="panel p-4">
-      <label className="grid gap-1 text-sm">
-        Player
-        <select className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>
-          {state.players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </select>
-      </label>
+      <h2 className="serif text-2xl">Private threads</h2>
+      <ul className="mt-2 grid gap-2" data-testid="gm-chat-list">
+        {state.players.map((p) => (
+          <li key={p.id}>
+            <button type="button" data-testid={`chat-with-${p.name}`} className={`tap w-full rounded-xl border border-[#4a342c] px-3 text-left ${p.id === playerId ? "bg-[#e6c27a] text-[#1a100e]" : ""}`} onClick={() => setPlayerId(p.id)}>{p.name}</button>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-sm text-[#d9c7b6]">Thread with {current?.name || "a player"}. Only the two of you see it.</p>
       <div className="mt-3 grid max-h-80 gap-2 overflow-auto" data-testid="chat-log">
         {thread.length === 0 && <p className="text-[#d9c7b6]">No messages with this player yet.</p>}
         {thread.map((msg) => <p key={msg.id}><span className="text-[#e6c27a]">{msg.name}: </span>{msg.text}</p>)}
@@ -495,51 +505,95 @@ function LogList({ lines }) {
   );
 }
 
-function Ahsoka({ state }) {
-  const origin = location.origin;
-  const code = state.code || "";
-  const key = state.agentKey || "";
-  const block = ahsokaBlock({ origin, code, key });
+function AshfallPanel({ state, act }) {
+  const summary = state.ashfallSummary;
   return (
-    <section className="panel grid gap-3 p-4" data-testid="ahsoka-panel">
-      <h2 className="serif text-2xl">Connect Ahsoka</h2>
-      <p className="text-sm text-[#d9c7b6]">This key opens only this game. Ahsoka can read the GM state, write private chat as Ahsoka (GM), and take the same actions you can.</p>
-      <p className="text-xs uppercase tracking-wider text-[#b5a394]">Agent key</p>
-      <code className="break-all text-sm" data-testid="ahsoka-key">{key}</code>
-      <p className="text-xs uppercase tracking-wider text-[#b5a394]">State</p>
-      <code className="break-all text-sm">{origin}/api/agent/{code}/state</code>
-      <p className="text-xs uppercase tracking-wider text-[#b5a394]">Summary</p>
-      <code className="break-all text-sm">{origin}/api/agent/{code}/summary</code>
-      <p className="text-xs uppercase tracking-wider text-[#b5a394]">Chat</p>
-      <code className="break-all text-sm">{origin}/api/agent/{code}/chat</code>
-      <textarea data-testid="ahsoka-instructions" readOnly className="min-h-64 rounded-xl border border-[#4a342c] bg-[#1c1412] p-3 text-xs" value={block} />
-      <p className="text-xs text-[#b5a394]">Player ids are in the state JSON. Header on every call: X-Agent-Key.</p>
+    <section className="panel mb-4 grid gap-3 p-4" data-testid="ashfall-summary">
+      <h2 className="serif text-2xl">Ashfall summary</h2>
+      <p className="text-sm text-[#e6c27a]">{summary?.headline || "Ashfall summary. Nothing here has been applied."}</p>
+      {(summary?.lines || []).length === 0 && <p className="text-sm text-[#d9c7b6]">No night actions submitted yet.</p>}
+      {(summary?.lines || []).map((line) => (
+        <div key={line.id}>
+          <p>{line.text}</p>
+          <p className="text-sm text-[#d9c7b6]">{line.projection}</p>
+        </div>
+      ))}
+      <div className="grid gap-3" data-testid="night-actions">
+        {(state.nightActions || []).map((action) => <NightRow key={action.id} action={action} players={state.players} act={act} />)}
+      </div>
     </section>
   );
 }
 
-function ahsokaBlock({ origin, code, key }) {
-  return `You are Ahsoka, the GM assistant for one game of Ashes of Lumination.
-Room ${code}. The key works only for this game. Do not show it to players.
+function NightRow({ action, players, act }) {
+  const [targetId, setTargetId] = useState(action.targets?.[0] || "");
+  return (
+    <div className="grid gap-2 border-t border-[#4a342c] pt-3">
+      <p className="text-sm">{action.plain}</p>
+      {!action.skip && (
+        <div className="flex flex-wrap gap-2">
+          <select className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={targetId} onChange={(e) => setTargetId(e.target.value)}>
+            {players.filter((p) => p.alive && p.id !== action.playerId).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+          <button type="button" className="tap rounded-xl border border-[#e6c27a] px-3" onClick={() => act({ type: "edit-night", actionId: action.id, targetId })}>Override</button>
+          <button type="button" data-testid="void-action" className="tap rounded-xl border border-[#e15b4c] px-3" onClick={() => act({ type: "edit-night", actionId: action.id, void: true })}>Void</button>
+        </div>
+      )}
+    </div>
+  );
+}
 
-Read the full GM state, log, and a short summary:
-curl -s -H "X-Agent-Key: ${key}" ${origin}/api/agent/${code}/state
+function Voting({ state, act }) {
+  const [choice, setChoice] = useState("NO_EXEC");
+  return (
+    <section className="panel grid gap-3 p-4" data-testid="voting-tab">
+      <h2 className="serif text-2xl">Nominations</h2>
+      {(state.nominations || []).length === 0 && <p className="text-sm text-[#d9c7b6]">No nominations yet.</p>}
+      {(state.nominations || []).map((row, index) => <p key={index} className="text-sm">{row.byName} nominated {row.targetName}.</p>)}
+      <h2 className="serif text-2xl">Votes</h2>
+      {(state.votes || []).length === 0 && <p className="text-sm text-[#d9c7b6]">No votes yet.</p>}
+      {(state.votes || []).map((row) => <p key={row.name} className="text-sm">{row.name} voted {row.choice}.</p>)}
+      {(state.tallies || []).length > 0 && (
+        <ul className="text-sm">
+          {state.tallies.map((row) => <li key={row.id}>{row.name}: {row.votes}</li>)}
+        </ul>
+      )}
+      {state.phase === "dawnAccord" && !state.settings?.automate && (
+        <div className="grid gap-2">
+          <label className="grid gap-1 text-sm">
+            Execution
+            <select data-testid="execution-choice" className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={choice} onChange={(e) => setChoice(e.target.value)}>
+              <option value="NO_EXEC">No execution</option>
+              {(state.ballot || []).filter((row) => row.id !== "NO_EXEC").map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
+            </select>
+          </label>
+          <button data-testid="advance" className="tap rounded-xl bg-[#e6c27a] font-semibold text-[#1a100e]" onClick={() => act({ type: "resolve", execute: choice })}>Resolve the Dawn Accord</button>
+        </div>
+      )}
+    </section>
+  );
+}
 
-Read the summary as plain text:
-curl -s -H "X-Agent-Key: ${key}" ${origin}/api/agent/${code}/summary
-
-Read private GM chat with a player:
-curl -s -H "X-Agent-Key: ${key}" "${origin}/api/agent/${code}/chat?playerId=PLAYER_ID"
-
-Send a private chat message. Players see it as from Ahsoka (GM):
-curl -s -X POST -H "X-Agent-Key: ${key}" -H "Content-Type: application/json" \\
-  -d '{"playerId":"PLAYER_ID","text":"Your message"}' \\
-  ${origin}/api/agent/${code}/chat
-
-Optional, the same actions the GM screen can take (resolve, coin, settings, deal, gm-note, mind-override, chat):
-curl -s -X POST -H "X-Agent-Key: ${key}" -H "Content-Type: application/json" \\
-  -d '{"type":"resolve"}' \\
-  ${origin}/api/agent/${code}/action`;
+function GmLog({ state }) {
+  return (
+    <div className="grid gap-3" data-testid="game-log">
+      <section className="panel p-4">
+        <h2 className="serif text-2xl">This phase</h2>
+        {(state.intentLog || []).length === 0 && <p className="mt-2 text-sm text-[#d9c7b6]">Nothing in this phase yet.</p>}
+        {(state.intentLog || []).map((line, index) => <p key={index} className="mt-2 text-sm">{line}</p>)}
+      </section>
+      <section className="panel p-4">
+        <h2 className="serif text-2xl">Earlier</h2>
+        {(state.logArchive || []).length === 0 && <p className="mt-2 text-sm text-[#d9c7b6]">No earlier phase is archived yet.</p>}
+        {(state.logArchive || []).map((segment) => (
+          <details key={segment.id} className="mt-3">
+            <summary>{segment.title}</summary>
+            {segment.lines.map((line, index) => <p key={index} className="mt-2 text-sm">{line}</p>)}
+          </details>
+        ))}
+      </section>
+    </div>
+  );
 }
 
 function PlayerScreen({ state, act, error, connected, onLeave }) {
@@ -657,19 +711,29 @@ function Catalogue({ roles, onClose }) {
         {groups.map((group) => (
           <section key={group.team} className="mt-4">
             <h3 className="label text-xs text-[#c9a85a]"><Symbol team={group.team} /> {group.team}</h3>
-            {group.roles.map((role) => (
-              <article key={role.id} className="mt-2 flex gap-3 border-t border-[#8a7038] py-3">
-                <Portrait roleId={role.id} name={role.name} size={64} />
-                <div>
-                  <h4 className="serif text-xl uppercase">{role.name}</h4>
-                  <p className="text-sm text-[#a89a86]">{role.short}</p>
-                </div>
-              </article>
-            ))}
+            {group.roles.map((role) => <RoleCard key={role.id} role={role} />)}
           </section>
         ))}
       </div>
     </div>
+  );
+}
+
+function RoleCard({ role }) {
+  const [open, setOpen] = useState(false);
+  const thin = (role.ability || "").trim().length < 180;
+  return (
+    <article className="mt-2 flex gap-3 border-t border-[#8a7038] py-3">
+      <Portrait roleId={role.id} name={role.name} size={64} />
+      <div>
+        <h4 className="serif text-xl uppercase">{role.name}</h4>
+        <p className="text-sm text-[#a89a86]">{role.short}</p>
+        <p className="text-xs uppercase tracking-wider text-[#b5a394]">{role.team}</p>
+        <button type="button" data-testid={`more-info-${role.id}`} className="mt-2 text-sm underline" onClick={() => setOpen((value) => !value)}>More info</button>
+        {open && <p className="mt-2 text-sm" data-testid={`role-detail-${role.id}`}>{role.ability}</p>}
+        {open && thin && <p className="mt-2 text-xs text-[#e6c27a]" data-testid="thin-role">The rule text for this role is short.</p>}
+      </div>
+    </article>
   );
 }
 
@@ -696,7 +760,7 @@ function ActionCard({ item, act }) {
   const [targetId2, setTargetId2] = useState("");
   const [roleId, setRoleId] = useState("");
   const [ids, setIds] = useState([]);
-  if (item.kind === "note") return <p className="panel p-4 text-sm">{item.text}</p>;
+  if (item.kind === "note") return <p className="panel p-4 text-sm" data-testid="submitted-note">{item.text}</p>;
   if (item.kind === "invite") {
     return (
       <div className="panel flex gap-2 p-4">
@@ -765,22 +829,16 @@ function ActionCard({ item, act }) {
 
 function PlayerChat({ state, act }) {
   const [text, setText] = useState("");
-  const [channel, setChannel] = useState("gm");
-  const thread = state.chats.filter((c) => c.channel === channel);
+  const thread = state.chats.filter((c) => c.channel === "gm");
   return (
     <section className="panel p-4">
-      {state.you.teammates && (
-        <div className="mb-3 flex gap-2">
-          <button className={`tap rounded-xl px-3 ${channel === "gm" ? "bg-[#e6c27a] text-[#1a100e]" : "border border-[#4a342c]"}`} onClick={() => setChannel("gm")}>GM</button>
-          <button className={`tap rounded-xl px-3 ${channel === "ashen" ? "bg-[#e07040] text-[#1a100e]" : "border border-[#4a342c]"}`} onClick={() => setChannel("ashen")}>Ashen</button>
-        </div>
-      )}
-      <div className="grid max-h-80 gap-2 overflow-auto text-sm" data-testid="chat-log">
+      <p className="text-sm text-[#d9c7b6]">Private notes to the GM. Talk with the table in person.</p>
+      <div className="mt-3 grid max-h-80 gap-2 overflow-auto text-sm" data-testid="chat-log">
         {thread.length === 0 && <p className="text-[#d9c7b6]">No messages yet.</p>}
         {thread.map((msg) => <p key={msg.id}><span className="text-[#e6c27a]">{msg.name}: </span>{msg.text}</p>)}
       </div>
-      <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); act({ type: "chat", channel, text }).then(() => setText("")); }}>
-        <input data-testid="chat-input" className="tap min-w-0 flex-1 rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={text} onChange={(e) => setText(e.target.value)} placeholder={channel === "ashen" ? "Ashen only" : "Private note to the GM"} />
+      <form className="mt-3 flex gap-2" onSubmit={(e) => { e.preventDefault(); act({ type: "chat", channel: "gm", text }).then(() => setText("")); }}>
+        <input data-testid="chat-input" className="tap min-w-0 flex-1 rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={text} onChange={(e) => setText(e.target.value)} placeholder="Private note to the GM" />
         <button data-testid="chat-send" className="tap rounded-xl bg-[#e6c27a] px-4 text-[#1a100e]">Send</button>
       </form>
     </section>
@@ -926,9 +984,8 @@ function labelPhase(state) {
   return state.phaseLabel || state.phase;
 }
 
-function rememberRoom(code, agentKey) {
+function rememberRoom(code) {
   if (code) sessionStorage.setItem("aol-room", code);
-  if (agentKey) sessionStorage.setItem("aol-agent-key", agentKey);
 }
 
 const originalFetch = window.fetch;
@@ -937,7 +994,7 @@ window.fetch = async (input, init) => {
   try {
     const clone = res.clone();
     const data = await clone.json();
-    if (data?.code && data?.gmToken) rememberRoom(data.code, data.agentKey);
+    if (data?.code && data?.gmToken) rememberRoom(data.code);
     if (data?.code && data?.token && !data?.gmToken) sessionStorage.setItem("aol-room", data.code);
   } catch { /* not json */ }
   return res;

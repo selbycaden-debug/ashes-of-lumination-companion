@@ -64,9 +64,15 @@ test("five phones sit a full night, day, and vote", async ({ browser }) => {
   await gm.getByTestId("advance").click();
   await expect(gm.getByRole("heading", { name: /Ash Fall/ })).toBeVisible();
   await expect(players[0].getByTestId("reveal")).toHaveCount(0);
+  await expect(gm.getByTestId("ashfall-summary")).toContainText("Nothing here has been applied");
+  await expect(gm.getByRole("button", { name: "Ahsoka" })).toHaveCount(0);
   await players[0].getByTestId("open-catalogue").click();
   await expect(players[0].getByTestId("catalogue")).toContainText("The Shadow Blade");
   await expect(players[0].getByTestId("catalogue")).toContainText("does not say which roles were dealt");
+  await players[0].getByTestId("more-info-the-shadow-blade").click();
+  await expect(players[0].getByTestId("role-detail-the-shadow-blade")).toContainText("succession");
+  await players[0].getByTestId("more-info-voice-of-the-accord").click();
+  await expect(players[0].getByTestId("thin-role").first()).toBeVisible();
   await players[0].getByRole("button", { name: "Close" }).click();
 
   await gm.screenshot({ path: "screenshots/gm-phone.png", fullPage: true });
@@ -80,46 +86,46 @@ test("five phones sit a full night, day, and vote", async ({ browser }) => {
     for (let i = 0; i < count; i++) ids.push(await forms.nth(i).getAttribute("data-testid"));
     await submitForms(page, ids);
   }
+  await expect.poll(async () => {
+    for (const page of players) {
+      if (await page.getByText("Action submitted").count()) return true;
+    }
+    return false;
+  }).toBeTruthy();
   await gm.getByTestId("advance").click();
   await expect(gm.getByRole("heading", { name: /Lumination/ })).toBeVisible();
+  await gm.getByRole("button", { name: "Log", exact: true }).click();
+  await expect(gm.getByTestId("game-log")).toContainText("Earlier");
+  await gm.getByRole("button", { name: "Table", exact: true }).click();
 
   for (const page of players) {
     await page.getByRole("button", { name: "Act", exact: true }).click();
     await page.getByTestId("statement").fill("I woke with the light.");
-    await submitForms(page, ["form-statement", "form-nomination"]);
+    await submitForms(page, ["form-statement"]);
   }
   await gm.getByTestId("advance").click();
   await expect(gm.getByRole("heading", { name: /Dawn Accord/ })).toBeVisible();
 
   for (const page of players) {
     await page.getByRole("button", { name: "Act", exact: true }).click();
+    await submitForms(page, ["form-nomination"]);
+  }
+  for (const page of players) {
+    await expect(page.getByText("Nomination submitted")).toBeVisible();
     await submitForms(page, ["form-vote"]);
   }
+  await gm.getByRole("button", { name: "Voting", exact: true }).click();
+  await expect(gm.getByTestId("voting-tab")).toContainText("Nominations");
+  await gm.getByTestId("execution-choice").selectOption("NO_EXEC");
   await gm.getByTestId("advance").click();
 
   await players[0].getByRole("button", { name: "Chat", exact: true }).click();
+  await expect(players[0].getByRole("button", { name: "Ashen" })).toHaveCount(0);
   await players[0].getByTestId("chat-input").fill("GM, it is Ava.");
   await players[0].getByTestId("chat-send").click();
   await gm.getByRole("button", { name: "Chat", exact: true }).click();
+  await expect(gm.getByTestId("gm-chat-list")).toContainText("Ava");
   await expect(gm.getByTestId("chat-log")).toContainText("GM, it is Ava.");
-
-  await gm.getByRole("button", { name: "Ahsoka" }).click();
-  const key = (await gm.getByTestId("ahsoka-key").innerText()).trim();
-  const instructions = await gm.getByTestId("ahsoka-instructions").inputValue();
-  expect(instructions).toContain(key);
-  expect(instructions).toContain(`/api/agent/${code}/state`);
-  const agent = await gm.request.get(`/api/agent/${code}/state`, { headers: { "X-Agent-Key": key } });
-  expect(agent.ok()).toBeTruthy();
-  const body = await agent.json();
-  expect(body.summary).toContain("Phase");
-  expect(body.state.players.some((p) => p.roleName === "The Ashen Tyrant")).toBeTruthy();
-  const ava = body.state.players.find((p) => p.name === "Ava");
-  const posted = await gm.request.post(`/api/agent/${code}/chat`, {
-    headers: { "X-Agent-Key": key, "content-type": "application/json" },
-    data: { playerId: ava.id, text: "Ahsoka is on the line." },
-  });
-  expect(posted.ok()).toBeTruthy();
-  await expect(players[0].getByTestId("chat-log")).toContainText("Ahsoka (GM)");
 
   await gm.getByRole("button", { name: "Table", exact: true }).click();
   await expect(gm.getByTestId("gm-table")).toContainText("The Ashen Tyrant");
