@@ -342,8 +342,9 @@ function Setup({ state, act }) {
       ) : (
         <p className="text-sm text-[#a89a86]">Test rule: 75% succession cutoff — not used at 5–6 players.</p>
       )}
-      <div className="border-t border-[#8a7038] pt-3">
-        <p className="text-sm"><strong>Design defaults (Nov 21 rulebook audit) — Default pending Caden.</strong> On matches the audited rulebook. Off restores the earlier behaviour.</p>
+      <details className="border-t border-[#8a7038] pt-3" data-testid="advanced-setup">
+        <summary className="cursor-pointer text-sm">Advanced</summary>
+        <p className="mt-2 text-sm"><strong>Design defaults (Nov 21 rulebook audit) — Default pending Caden.</strong> On matches the audited rulebook. Off restores the earlier behaviour.</p>
         <div className="my-2 flex gap-2">
           <button type="button" className="tap rounded-sm border border-[#c9a85a] px-3" onClick={() => act({ type: "settings", allDefaults: "on" })}>All on</button>
           <button type="button" className="tap rounded-sm border border-[#c9a85a] px-3" onClick={() => act({ type: "settings", allDefaults: "off" })}>All off</button>
@@ -357,7 +358,7 @@ function Setup({ state, act }) {
             label={`${d.id} ${d.title} — Default pending Caden. On: ${d.on} Off: ${d.off}`}
           />
         ))}
-      </div>
+      </details>
       <button data-testid="deal" className="tap rounded-xl bg-[#e07040] font-semibold text-[#1a100e]" onClick={() => act({ type: "deal" })}>Deal roles</button>
     </section>
   );
@@ -387,8 +388,13 @@ function PhaseBar({ state, act }) {
           </ul>
         )}
       </div>
+      {state.phase === "ashFall" && state.nightProgress && (
+        <p className="text-sm" data-testid="night-progress">{state.nightProgress.received} of {state.nightProgress.expected} actions in</p>
+      )}
       {state.phase !== "ended" && state.winner == null && !state.block && !needSoul && !manualDawn && (
-        <button data-testid="advance" className="tap rounded-xl bg-[#e6c27a] px-4 font-semibold text-[#1a100e]" onClick={() => act({ type: "resolve" })}>{label}</button>
+        <button data-testid="advance" className="tap rounded-xl bg-[#e6c27a] px-4 font-semibold text-[#1a100e]" onClick={() => act({ type: "resolve" })}>
+          {state.phase === "ashFall" && state.nightProgress ? `Resolve night (${state.nightProgress.received} of ${state.nightProgress.expected} in)` : label}
+        </button>
       )}
       {state.block?.type === "coin" && (
         <div className="flex gap-2">
@@ -512,16 +518,29 @@ function AshfallPanel({ state, act }) {
       <h2 className="serif text-2xl">Ashfall summary</h2>
       <p className="text-sm text-[#e6c27a]">{summary?.headline || "Ashfall summary. Nothing here has been applied."}</p>
       {(summary?.lines || []).length === 0 && <p className="text-sm text-[#d9c7b6]">No night actions submitted yet.</p>}
-      {(summary?.lines || []).map((line) => (
-        <div key={line.id}>
-          <p>{line.text}</p>
-          <p className="text-sm text-[#d9c7b6]">{line.projection}</p>
-        </div>
-      ))}
+      {(summary?.lines || []).map((line) => <SummaryLine key={line.id} line={line} act={act} />)}
       <div className="grid gap-3" data-testid="night-actions">
         {(state.nightActions || []).map((action) => <NightRow key={action.id} action={action} players={state.players} act={act} />)}
       </div>
     </section>
+  );
+}
+
+function SummaryLine({ line, act }) {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState(line.playerNote || "");
+  return (
+    <div className="grid gap-2 border-t border-[#4a342c] pt-3">
+      <p>{line.text}</p>
+      <p className="text-sm text-[#d9c7b6]">{line.projection}</p>
+      <button type="button" className="tap w-fit rounded-xl border border-[#e6c27a] px-3 text-sm" onClick={() => setOpen(true)}>Copy to {line.actorName}'s thread</button>
+      {open && (
+        <form className="grid gap-2" onSubmit={(e) => { e.preventDefault(); act({ type: "chat", channel: "gm", from: "gm", playerId: line.playerId, text }).then(() => setOpen(false)); }}>
+          <textarea data-testid="copy-draft" className="min-h-20 rounded-xl border border-[#4a342c] bg-[#1c1412] p-2 text-sm" value={text} onChange={(e) => setText(e.target.value)} />
+          <button data-testid="copy-send" className="tap rounded-xl bg-[#e6c27a] text-[#1a100e]">Send</button>
+        </form>
+      )}
+    </div>
   );
 }
 
@@ -530,6 +549,9 @@ function NightRow({ action, players, act }) {
   return (
     <div className="grid gap-2 border-t border-[#4a342c] pt-3">
       <p className="text-sm">{action.plain}</p>
+      {action.voided && (
+        <button type="button" data-testid="undo-void" className="tap w-fit rounded-xl border border-[#e6c27a] px-3" onClick={() => act({ type: "edit-night", actionId: action.id, undo: true })}>Undo void</button>
+      )}
       {!action.skip && (
         <div className="flex flex-wrap gap-2">
           <select className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={targetId} onChange={(e) => setTargetId(e.target.value)}>

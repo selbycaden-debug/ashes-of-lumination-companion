@@ -43,6 +43,7 @@ test("five phones sit a full night, day, and vote", async ({ browser }) => {
   }
 
   await expect(gm.getByTestId("seat-list")).toContainText("Eli");
+  await expect(gm.getByTestId("advanced-setup")).not.toHaveAttribute("open");
   await gm.getByTestId("open-rulebook").click();
   await expect(gm.getByTestId("rulebook-headline")).toHaveText("The main goal is always to kill the Ashen Tyrant.");
   await expect(gm.getByTestId("rulebook-band")).toContainText("Ashen: 1");
@@ -65,6 +66,7 @@ test("five phones sit a full night, day, and vote", async ({ browser }) => {
   await expect(gm.getByRole("heading", { name: /Ash Fall/ })).toBeVisible();
   await expect(players[0].getByTestId("reveal")).toHaveCount(0);
   await expect(gm.getByTestId("ashfall-summary")).toContainText("Nothing here has been applied");
+  await expect(gm.getByTestId("night-progress")).toContainText("of");
   await expect(gm.getByRole("button", { name: "Ahsoka" })).toHaveCount(0);
   await players[0].getByTestId("open-catalogue").click();
   await expect(players[0].getByTestId("catalogue")).toContainText("The Shadow Blade");
@@ -89,6 +91,16 @@ test("five phones sit a full night, day, and vote", async ({ browser }) => {
   await expect.poll(async () => {
     for (const page of players) {
       if (await page.getByText("Action submitted").count()) return true;
+    }
+    return false;
+  }).toBeTruthy();
+  await gm.getByRole("button", { name: /Copy to/ }).first().click();
+  await gm.getByTestId("copy-draft").fill("Your night action is recorded.");
+  await gm.getByTestId("copy-send").click();
+  await expect.poll(async () => {
+    for (const page of players) {
+      await page.getByRole("button", { name: "Chat", exact: true }).click();
+      if (await page.getByText("Your night action is recorded.").count()) return true;
     }
     return false;
   }).toBeTruthy();

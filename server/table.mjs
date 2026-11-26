@@ -112,10 +112,11 @@ export function reduce(state, action) {
       }
       const actions = state.actions.map((item) => {
         if (item.id !== action.actionId || item.phase !== "ashFall" || item.round !== state.round) return item;
-        if (action.void) return { ...item, skip: true, targets: [], extra: "" };
+        if (action.undo) return { ...item, skip: false, targets: item.voidedTargets || [], voidedTargets: [] };
+        if (action.void) return { ...item, skip: true, targets: [], voidedTargets: (item.targets || []).slice(), extra: "" };
         const targets = [action.targetId, action.targetId2].filter(Boolean);
         if (targets.length < 1) throw new Error("Choose a target.");
-        return { ...item, skip: false, targets };
+        return { ...item, skip: false, targets, voidedTargets: [] };
       });
       return addLog({ ...state, actions }, "GM edited a night action. Nothing is applied until the night is resolved.");
     }
@@ -237,7 +238,14 @@ function advance(state, action = {}) {
   if (state.pendingParadoxFlip) throw new Error("Enter the Paradox coin first.");
   if (state.winner) throw new Error("The game is over.");
   if (state.phase === "setup") return beginGame(state);
-  if (state.phase === "ashFall") return resolveAshFall(state);
+  if (state.phase === "ashFall") {
+    const aliveBefore = new Set(state.players.filter((p) => p.alive).map((p) => p.id));
+    let next = resolveAshFall(state);
+    const died = state.players.filter((p) => aliveBefore.has(p.id) && !next.players.find((q) => q.id === p.id)?.alive).map((p) => p.name);
+    const notice = died.length ? "Died tonight: " + died.join(", ") + "." : "Nobody died tonight.";
+    const nightDeaths = { ...(next.nightDeaths || {}), [String(state.round)]: died };
+    return { ...next, nightDeaths, publicNotices: [...(next.publicNotices || []), notice] };
+  }
   if (state.phase === "lumination") {
     let next = resolveLumination(answerSelfKnownQuestion(state));
     if (!Object.keys(next.nominations || {}).length) next = { ...next, nominees: [] };
@@ -457,6 +465,7 @@ export function viewFor(state, viewer, extras) {
       },
       ashfallSummary: ashfallSummary(state),
       nightActions: nightSheet(state),
+      nightProgress: nightProgress(state),
       intentLog: logBook(state).current,
       logArchive: logBook(state).archive,
       votes: voteRows(state),
@@ -497,6 +506,7 @@ export function viewFor(state, viewer, extras) {
       you: { id: viewer.playerId, name: viewer.name || "Player", alive: true, roleId: null, inbox: [], notes: "" },
       menu: [],
       chats: chatsFor(extras.chats, null, viewer),
+      publicLog: playerPublicLog(state.publicNotices),
     };
   }
   const role = roleOf(self.roleId);
@@ -524,6 +534,7 @@ export function viewFor(state, viewer, extras) {
     },
     menu: menuFor(state, self),
     chats: chatsFor(extras.chats, self, viewer),
+    publicLog: playerPublicLog(state.publicNotices),
   };
 }
 
@@ -632,7 +643,17 @@ function ashfallSummary(state) {
   const acts = (state.actions || []).filter((a) => a.round === state.round && a.phase === "ashFall");
   return {
     headline: "Ashfall summary. Nothing here has been applied.",
-    lines: acts.map((a) => ({ id: a.id, text: plainAction(state, a), projection: projectAction(state, a) })),
+    lines: acts.map((a) => {
+      const actor = state.players.find((p) => p.id === a.playerId);
+      return {
+        id: a.id,
+        playerId: a.playerId,
+        actorName: actor?.name || "Player",
+        text: plainAction(state, a),
+        projection: projectAction(state, a),
+        playerNote: ownActionNote(state, actor, a),
+      };
+    }),
   };
 }
 
@@ -647,6 +668,7 @@ function nightSheet(state) {
       roleName: actor ? roleOf(actor.roleId).name : "",
       plain: plainAction(state, a),
       skip: Boolean(a.skip),
+      voided: Array.isArray(a.voidedTargets) && a.voidedTargets.length > 0,
       targets: a.targets || [],
     };
   });
@@ -660,6 +682,11 @@ function logBook(state) {
     if (!groups.has(key)) groups.set(key, { round: action.round, phase: action.phase, lines: [] });
     groups.get(key).lines.push(plainAction(state, action));
   }
+  for (const [round, died] of Object.entries(state.nightDeaths || {})) {
+    const key = `${round}:ashFall`;
+    if (!groups.has(key)) groups.set(key, { round: Number(round), phase: "ashFall", lines: [] });
+    groups.get(key).lines.push(died.length ? "Died: " + died.join(", ") + "." : "Nobody died.");
+  }
   const order = { ashFall: 1, lumination: 2, dawnAccord: 3 };
   const title = { ashFall: "Ash Fall", lumination: "Lumination", dawnAccord: "Dawn Accord" };
   const currentKey = `${state.round}:${state.phase}`;
@@ -672,6 +699,42 @@ function logBook(state) {
       lines: segment.lines,
     })),
   };
+}
+
+function ownActionNote(state, actor, action) {
+  if (!actor) return "Your night action is recorded.";
+  const names = (action.targets || []).map((id) => personName(state, id));
+  if (action.skip && (action.voidedTargets || []).length) return "The GM set aside your night action. It has no effect.";
+  if (action.skip) return "You skipped your night action.";
+  return "Your night action is recorded: " + (action.label || "your ability") + (names.length ? " on " + names.join(" and ") : "") + ".";
+}
+
+function playerPublicLog(notices) {
+  return (notices || []).filter((text) =>
+    text.startsWith("Died tonight:") ||
+    text.startsWith("Nobody died tonight.") ||
+    text.startsWith("Nominations:") ||
+    text.startsWith("Votes:") ||
+    text.startsWith("A Sunmark") ||
+    text.startsWith("The shot") ||
+    / has died\.$/.test(text)
+  ).map((text, i) => ({ id: "pub" + i, text }));
+}
+
+function nightProgress(state) {
+  if (state.phase !== "ashFall") return null;
+  let expected = 0;
+  let received = 0;
+  for (const player of state.players) {
+    if (!player.alive) continue;
+    const kinds = new Set(legalAshMoves(state, player).map((move) => (move.inherited ? "inheritedKill" : move.action)));
+    if (player.syndShield) kinds.add("syndShield");
+    for (const kind of kinds) {
+      expected += 1;
+      if (actionLocked(state, player, kind)) received += 1;
+    }
+  }
+  return { received, expected };
 }
 
 function voteRows(state) {
