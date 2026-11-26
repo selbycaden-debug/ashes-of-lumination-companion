@@ -75,15 +75,54 @@ test("a night action locks, the summary stays unapplied, and a void stops the ki
     assert.ok(preview.data.intentLog.some((line) => line.includes(actor.name)));
     assert.equal(preview.data.logArchive.length, 0);
     assert.ok(preview.data.players.every((p) => p.alive));
+    assert.equal(preview.data.nightProgress.received >= 1, true);
+    const secret = preview.data.ashfallSummary.lines.find((line) => line.text.includes("night kill")).text;
+    for (const player of players) {
+      const view = (await call(port, "/api/state", { token: player.token })).data;
+      assert.equal(view.kind, "player");
+      assert.equal(view.ashfallSummary, undefined);
+      assert.equal(view.nightActions, undefined);
+      assert.equal(view.intentLog, undefined);
+      assert.equal(view.logArchive, undefined);
+      assert.equal(view.log, undefined);
+      assert.equal(view.votes, undefined);
+      assert.equal(view.nightProgress, undefined);
+      assert.equal(view.reminders, undefined);
+      const raw = JSON.stringify(view);
+      assert.equal(raw.includes(secret), false);
+      assert.equal(raw.includes("Ashfall summary"), false);
+    }
     const night = preview.data.nightActions.find((action) => action.plain.includes(actor.name));
     const wiped = await gm({ type: "edit-night", actionId: night.id, void: true });
     assert.equal(wiped.status, 200, wiped.data.error || "");
     assert.ok(wiped.data.state.ashfallSummary.lines.some((line) => line.projection === "No effect from a skip."));
+    const undone = await gm({ type: "edit-night", actionId: night.id, undo: true });
+    assert.equal(undone.status, 200, undone.data.error || "");
+    assert.equal(undone.data.state.nightActions.find((item) => item.id === night.id).voided, false);
+    assert.equal((await gm({ type: "edit-night", actionId: night.id, void: true })).status, 200);
     const resolved = await gm({ type: "resolve" });
     assert.equal(resolved.status, 200, resolved.data.error || "");
     assert.equal(resolved.data.state.phase, "lumination");
     assert.ok(resolved.data.state.players.every((p) => p.alive));
-    assert.ok(resolved.data.state.logArchive.some((segment) => segment.title.startsWith("Ash Fall")));
+    assert.ok(resolved.data.state.logArchive.some((segment) => segment.title.startsWith("Ash Fall") && segment.lines.some((line) => line.startsWith("Nobody died."))));
+    for (const player of players) {
+      const view = (await call(port, "/api/state", { token: player.token })).data;
+      assert.ok(view.publicLog.some((line) => line.text === "Nobody died tonight."));
+      assert.ok(view.publicLog.every((line) => /^(Died tonight:|Nobody died tonight\.|Nominations:|Votes:|A Sunmark|The shot|.* has died\.)$/.test(line.text)));
+      const raw = JSON.stringify(view);
+      assert.equal(raw.includes(secret), false);
+      assert.equal(raw.includes("Ash Fall kill"), false);
+      assert.equal(view.you.inbox.every((item) => item.text.includes(view.you.name) || !/targeted|marked .* for a night kill/i.test(item.text)), true);
+    }
+    const note = preview.data.ashfallSummary.lines.find((line) => line.playerId);
+    const sent = await gm({ type: "chat", channel: "gm", from: "gm", playerId: note.playerId, text: "Your night action is recorded." });
+    assert.equal(sent.status, 200);
+    const told = players.find((p) => p.name === note.actorName);
+    const heard = (await call(port, "/api/state", { token: told.token })).data;
+    assert.ok(heard.chats.some((c) => c.text === "Your night action is recorded."));
+    const stranger = players.find((p) => p.name !== note.actorName);
+    const quiet = (await call(port, "/api/state", { token: stranger.token })).data;
+    assert.equal(quiet.chats.some((c) => c.text === "Your night action is recorded."), false);
     assert.equal(resolved.data.state.intentLog.some((line) => line.includes("night kill")), false);
     const gone = await call(port, `/api/agent/${code}/state`);
     assert.equal(gone.status, 404);
