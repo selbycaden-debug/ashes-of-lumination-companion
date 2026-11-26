@@ -20,6 +20,7 @@ import {
   setSoulboundPair,
   startRound,
   tallies,
+  nominationWeight,
   winnerLabel,
   addLog,
   rulebookFor,
@@ -71,7 +72,14 @@ export function reduce(state, action) {
       return { ...state, setupNames: names };
     }
     case "settings": {
-      if (state.dealt) throw new Error("Setup is locked once roles are dealt.");
+      if (typeof action.automate === "boolean") {
+        if (Object.keys(action).every((key) => key === "type" || key === "automate")) return { ...state, automate: action.automate };
+        if (!state.dealt) state = { ...state, automate: action.automate };
+      }
+      if (state.dealt) {
+        if (typeof action.automate === "boolean") return { ...state, automate: action.automate };
+        throw new Error("Setup is locked once roles are dealt.");
+      }
       const next = { ...state };
       if (typeof action.cutoff === "boolean") next.testCutoff75 = action.cutoff;
       if (typeof action.testCutoff75 === "boolean") next.testCutoff75 = action.testCutoff75;
@@ -95,7 +103,21 @@ export function reduce(state, action) {
       if (state.dealt) throw new Error("Roles are already dealt.");
       const next = applyDeal(state, state.setupNames);
       if (!next.dealt) throw new Error("Deal needs 5 to 20 names.");
-      return next;
+      return { ...next, automate: state.automate === true };
+    }
+    case "edit-night": {
+      if (state.phase !== "ashFall") throw new Error("The night is closed.");
+      if (!state.actions.some((item) => item.id === action.actionId && item.phase === "ashFall" && item.round === state.round)) {
+        throw new Error("That action is not in this night.");
+      }
+      const actions = state.actions.map((item) => {
+        if (item.id !== action.actionId || item.phase !== "ashFall" || item.round !== state.round) return item;
+        if (action.void) return { ...item, skip: true, targets: [], extra: "" };
+        const targets = [action.targetId, action.targetId2].filter(Boolean);
+        if (targets.length < 1) throw new Error("Choose a target.");
+        return { ...item, skip: false, targets };
+      });
+      return addLog({ ...state, actions }, "GM edited a night action. Nothing is applied until the night is resolved.");
     }
     case "ash-touched": {
       if (!state.dealt) throw new Error("Deal first.");
@@ -131,6 +153,9 @@ export function reduce(state, action) {
       return submit(state, action);
     case "vote": {
       if (state.phase !== "dawnAccord") throw new Error("Voting is closed.");
+      const existing = (state.votes || {})[action.playerId];
+      if (existing && existing !== action.choice) throw new Error("Vote submitted.");
+      if (existing) return state;
       return castPlayerVote(state, action.playerId, action.choice);
     }
     case "invite-response":
@@ -150,7 +175,7 @@ export function reduce(state, action) {
       };
     }
     case "resolve":
-      return advance(state);
+      return advance(state, action);
     case "coin": {
       if (!state.pendingParadoxFlip) throw new Error("No coin is waiting.");
       if (action.result !== "heads" && action.result !== "tails") throw new Error("Call heads or tails.");
@@ -165,8 +190,10 @@ function submit(state, action) {
   const player = state.players.find((p) => p.id === action.playerId);
   if (!player) throw new Error("Unknown player.");
   if (action.kind === "nomination") {
-    if (state.phase !== "lumination") throw new Error("You cannot nominate now.");
-    return castNomination(state, player.id, action.targetId);
+    if (state.phase !== "dawnAccord") throw new Error("You cannot nominate now.");
+    if (!player.alive) throw new Error("You cannot nominate.");
+    if ((state.nominations || {})[player.id]) throw new Error("Nomination submitted.");
+    return refreshBallot(castNomination(state, player.id, action.targetId));
   }
   if (action.kind === "statement") return state;
   const script = {
@@ -193,6 +220,8 @@ function submit(state, action) {
     throw new Error("That action is not on this role's screen.");
   }
   if (script.action === "night") script.action = action.ability;
+  if (script.action === "syndShield" && player.syndShieldArmed) throw new Error("Action submitted.");
+  if (actionLocked(state, player, script.action)) throw new Error("Action submitted.");
   return applyScriptAction(state, script);
 }
 
@@ -204,19 +233,30 @@ function beginGame(state) {
   return startRound(state, true);
 }
 
-function advance(state) {
+function advance(state, action = {}) {
   if (state.pendingParadoxFlip) throw new Error("Enter the Paradox coin first.");
   if (state.winner) throw new Error("The game is over.");
   if (state.phase === "setup") return beginGame(state);
   if (state.phase === "ashFall") return resolveAshFall(state);
-  if (state.phase === "lumination") return resolveLumination(answerSelfKnownQuestion(state));
+  if (state.phase === "lumination") {
+    let next = resolveLumination(answerSelfKnownQuestion(state));
+    if (!Object.keys(next.nominations || {}).length) next = { ...next, nominees: [] };
+    return next;
+  }
   if (state.phase === "dawnAccord") {
     let next = computeDawnBallot(state);
-    const board = tallies(next);
-    const max = board.length ? Math.max(...board.map((row) => row.votes)) : 0;
-    const top = board.filter((row) => row.votes === max);
-    if (max > 0 && top.length === 1 && top[0].id !== NO_EXEC) next = executeNominee(next, top[0].id);
-    else if (board.length) next = executeNominee(next, NO_EXEC);
+    if (state.automate === true) {
+      const board = tallies(next);
+      const max = board.length ? Math.max(...board.map((row) => row.votes)) : 0;
+      const top = board.filter((row) => row.votes === max);
+      if (max > 0 && top.length === 1 && top[0].id !== NO_EXEC) next = executeNominee(next, top[0].id);
+      else if (board.length) next = executeNominee(next, NO_EXEC);
+    } else {
+      const choice = action.execute;
+      if (!choice) throw new Error("Choose an execution, or no execution.");
+      const id = choice === "NO_EXEC" || choice === "No execution" ? NO_EXEC : choice;
+      next = executeNominee(next, id);
+    }
     return closeDawnAccord(next);
   }
   throw new Error("There is nothing to resolve.");
@@ -245,17 +285,21 @@ function menuFor(state, player) {
         targets.push({ id: person.id, name: person.name });
       }
       const two = key === "parallax" || key === "swap";
-      items.push({
+      items.push(lockedItem({
         id: key,
         ability: key,
         kind: two ? "targets2" : "target",
         label: labelFor(key),
         allowSkip,
-        targets: two ? targets : targets,
+        targets,
         pairs: two ? group.filter((m) => m.target && m.target2).slice(0, 40).map((m) => ({ target: m.target, target2: m.target2 })) : undefined,
-      });
+      }, actionLocked(state, player, key), "Action submitted"));
     }
-    if (player.syndShield) items.push({ id: "syndShield", ability: "syndShield", kind: "button", label: "Raise your one-time syndicate shield" });
+    if (player.syndShield) {
+      items.push(player.syndShieldArmed
+        ? { id: "syndShield", kind: "note", text: "Action submitted" }
+        : { id: "syndShield", ability: "syndShield", kind: "button", label: "Raise your one-time syndicate shield" });
+    }
   }
   if (state.phase === "lumination" && player.alive) {
     const moves = legalDayMoves(state, player);
@@ -276,7 +320,7 @@ function menuFor(state, player) {
         continue;
       }
       if (key === "question") {
-        items.push({
+        items.push(lockedItem({
           id: "question",
           ability: "question",
           kind: "question",
@@ -284,26 +328,30 @@ function menuFor(state, player) {
           allowSkip: true,
           targets: uniqueTargets(state, group),
           roles: ROLES.map((r) => ({ id: r.id, name: r.name })),
-        });
+        }, actionLocked(state, player, "question"), "Action submitted"));
         continue;
       }
-      items.push({
+      items.push(lockedItem({
         id: key === "dayKill" ? "scar" : key,
         ability: key,
         kind: key === "summon" ? "targets2" : "target",
         label: labelFor(key),
         allowSkip: group.some((m) => m.skip),
         targets: uniqueTargets(state, group, key === "summon"),
-      });
+      }, actionLocked(state, player, key), "Action submitted"));
     }
-    items.push({
-      id: "nomination",
-      kind: "target",
-      label: "Nominate",
-      targets: state.players.filter((p) => p.alive).map((p) => ({ id: p.id, name: p.name })),
-    });
   }
   if (state.phase === "dawnAccord") {
+    if (player.alive) {
+      items.push((state.nominations || {})[player.id]
+        ? { id: "nomination", kind: "note", text: "Nomination submitted" }
+        : {
+          id: "nomination",
+          kind: "target",
+          label: "Nominate",
+          targets: state.players.filter((p) => p.alive).map((p) => ({ id: p.id, name: p.name })),
+        });
+    }
     const options = (state.nominees || []).filter(Boolean).map((id) => ({
       id,
       name: id === NO_EXEC ? "No execution" : state.players.find((p) => p.id === id)?.name || id,
@@ -311,7 +359,10 @@ function menuFor(state, player) {
     if (player.alive) options.push({ id: "skip", name: "Skip" });
     else if (player.finalVoteAvailable) options.push({ id: "SAVE", name: "Save my final vote" });
     if (player.alive || player.finalVoteAvailable) {
-      items.push({ id: "vote", kind: "vote", label: player.alive ? "Vote" : "Cast your final vote", targets: options });
+      const cast = (state.votes || {})[player.id];
+      items.push(cast
+        ? { id: "vote", kind: "note", text: "Vote submitted" }
+        : { id: "vote", kind: "vote", label: player.alive ? "Vote" : "Cast your final vote", targets: options });
     }
   }
   const invited = state.results.some((r) => r.playerId === player.id && r.text.startsWith("The Syndic has invited you") && !player.syndicateMember);
@@ -394,7 +445,6 @@ export function viewFor(state, viewer, extras) {
     return {
       ...base,
       kind: "gm",
-      agentKey: extras.agentKey,
       settings: {
         cutoff: state.testCutoff75 === true,
         testCutoff75: state.testCutoff75 === true,
@@ -403,7 +453,13 @@ export function viewFor(state, viewer, extras) {
         ashenPick: state.ashenPick === 3 || state.ashenPick === 4 ? state.ashenPick : -1,
         unalignedWide: state.unalignedWide === 1 || state.unalignedWide === 2 ? state.unalignedWide : -1,
         designDefaults: state.designDefaults || {},
+        automate: state.automate === true,
       },
+      ashfallSummary: ashfallSummary(state),
+      nightActions: nightSheet(state),
+      intentLog: logBook(state).current,
+      logArchive: logBook(state).archive,
+      votes: voteRows(state),
       defaults: DESIGN_DEFAULTS,
       cutoff: cut,
       block: state.pendingParadoxFlip ? { type: "coin", name: state.players.find((p) => p.roleId === "the-luminary-paradox")?.name || "The Luminary Paradox" } : null,
@@ -473,13 +529,156 @@ export function viewFor(state, viewer, extras) {
 
 function chatsFor(chats, self, viewer) {
   return (chats || []).filter((c) => {
-    if (c.channel === "ashen") return Boolean(self && self.team === "Ashen");
+    if (c.channel === "ashen") return false;
     if (c.channel !== "gm") return false;
     if (self && c.playerId === self.id) return true;
     if (!self && viewer.playerId && c.playerId === viewer.playerId) return true;
     if (viewer.name && c.seatName === viewer.name) return true;
     return false;
   });
+}
+
+function lockedItem(item, locked, text) {
+  if (!locked) return item;
+  return { id: item.id, kind: "note", text };
+}
+
+function phaseActions(state, player) {
+  return (state.actions || []).filter((a) => a.playerId === player.id && a.round === state.round && a.phase === state.phase);
+}
+
+function actionLocked(state, player, kind) {
+  const acts = phaseActions(state, player);
+  if (kind === "inheritedKill") return acts.some((a) => a.label.includes("Inherited"));
+  if (kind === "kill") return acts.some((a) => /kill/i.test(a.label) && !a.label.includes("Inherited") && !a.label.includes("Red Scar"));
+  if (kind === "poison") return acts.some((a) => a.label.includes("Mirebane") || a.label.includes("poison"));
+  if (kind === "shield") return acts.some((a) => a.label.includes("shield"));
+  if (kind === "check") return acts.some((a) => /check|Warden|Eye|Failsafe|Silent Hand|Foresight/i.test(a.label));
+  if (kind === "parallax") return acts.some((a) => a.label.includes("Parallax"));
+  if (kind === "swap") return acts.some((a) => a.label.includes("swap") || a.label.includes("Catalyst"));
+  if (kind === "question") return acts.some((a) => a.label.includes("Self Known"));
+  if (kind === "shot") return acts.some((a) => a.label.includes("Sunmark shot"));
+  if (kind === "dayKill" || kind === "scar") return acts.some((a) => a.label.includes("Red Scar"));
+  if (kind === "summon") return acts.some((a) => a.label.toLowerCase().includes("summon"));
+  if (kind === "syndShield") return Boolean(player.syndShieldArmed);
+  return false;
+}
+
+function refreshBallot(state) {
+  const counts = {};
+  for (const player of state.players) {
+    const target = (state.nominations || {})[player.id];
+    if (!target) continue;
+    const weight = nominationWeight(state, player);
+    if (weight <= 0) continue;
+    const person = state.players.find((p) => p.id === target);
+    if (!person?.alive) continue;
+    counts[target] = (counts[target] || 0) + weight;
+  }
+  const ranked = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+  let nominees = ranked.length <= 3 ? ranked.slice() : ranked.filter((id) => counts[id] >= counts[ranked[2]]);
+  if (nominees.length < 3 && !nominees.includes(NO_EXEC)) nominees = nominees.concat([NO_EXEC]);
+  return { ...state, nominees };
+}
+
+function personName(state, id) {
+  return state.players.find((p) => p.id === id)?.name || "someone";
+}
+
+function plainAction(state, action) {
+  const actor = state.players.find((p) => p.id === action.playerId);
+  if (!actor) return action.label || "An action was submitted.";
+  const who = `${actor.name} (${roleOf(actor.roleId).name})`;
+  const names = (action.targets || []).map((id) => personName(state, id));
+  if (action.skip) return `${who} is skipping.`;
+  const label = action.label || "";
+  if (label.includes("Integrity Warden")) return `${who} is checking whether ${names[0]} is Ash Touched or Mire Touched.`;
+  if (label.includes("Foresight")) return `${who} is checking whether ${names[0]} is Lumen or Ashen. Unaligned players appear as Ashen.`;
+  if (label.includes("Watching Eye")) return `${who} is checking whether ${names[0]} is the Ash Touched player.`;
+  if (label.includes("Shadow Blade check")) return `${who} is checking whether ${names[0]} is The Ashen Tyrant.`;
+  if (label.includes("Failsafe")) return `${who} is cancelling ${names[0]}'s ability.`;
+  if (label.includes("Silent Hand")) return `${who} is silencing ${names[0]}'s vote.`;
+  if (label.includes("Parallax")) return `${who} is comparing ${names[0]} and ${names[1]}.`;
+  if (label.includes("Catalyst") || label.includes("swap")) return `${who} is swapping the abilities of ${names[0]} and ${names[1]}.`;
+  if (label.includes("Mirebane") || label.includes("poison")) return `${who} is poisoning ${names[0]}.`;
+  if (label.includes("shield")) return `${who} is shielding ${names[0]}.`;
+  if (label.includes("Sunmark")) return `${who} is declaring a shot at ${names[0]}.`;
+  if (label.includes("Red Scar")) return `${who} is using a secret day kill on ${names[0]}.`;
+  if (label.includes("Self Known")) return `${who} is asking a private question${action.extra ? `: ${action.extra}` : ""}.`;
+  if (label.toLowerCase().includes("summon")) return `${who} is summoning ${names[0]} and ${names[1]}.`;
+  if (/kill/i.test(label)) return `${who} is marking ${names[0]} for a night kill.`;
+  return `${who} submitted ${label}.`;
+}
+
+function projectAction(state, action) {
+  if (action.skip) return "No effect from a skip.";
+  const label = action.label || "";
+  const target = state.players.find((p) => p.id === action.targets?.[0]);
+  const kill = /kill/i.test(label) && target;
+  if (kill && (target.roleId === "the-lumen-guard" || target.tempRoleId === "the-lumen-guard")) {
+    return `${target.name} would not die. The Lumen Guard is immune to everything except execution.`;
+  }
+  if (kill && target.shielded) return `${target.name} is shielded, so this kill would not land.`;
+  if (kill) return `${target.name} would die if nothing stops this kill.`;
+  if ((label.includes("Mirebane") || label.includes("poison")) && target) {
+    return `${target.name} would take a poison mark. Three successful poisons cause death on a later night.`;
+  }
+  if (label.includes("shield") && target) return `${target.name} would be shielded for this night and the following day.`;
+  return "The private result is not applied until you resolve.";
+}
+
+function ashfallSummary(state) {
+  if (!state.dealt || state.phase !== "ashFall") return null;
+  const acts = (state.actions || []).filter((a) => a.round === state.round && a.phase === "ashFall");
+  return {
+    headline: "Ashfall summary. Nothing here has been applied.",
+    lines: acts.map((a) => ({ id: a.id, text: plainAction(state, a), projection: projectAction(state, a) })),
+  };
+}
+
+function nightSheet(state) {
+  if (state.phase !== "ashFall") return [];
+  return (state.actions || []).filter((a) => a.round === state.round && a.phase === "ashFall").map((a) => {
+    const actor = state.players.find((p) => p.id === a.playerId);
+    return {
+      id: a.id,
+      playerId: a.playerId,
+      playerName: actor?.name || "",
+      roleName: actor ? roleOf(actor.roleId).name : "",
+      plain: plainAction(state, a),
+      skip: Boolean(a.skip),
+      targets: a.targets || [],
+    };
+  });
+}
+
+function logBook(state) {
+  const groups = new Map();
+  for (const action of state.actions || []) {
+    if (action.phase === "dawnAccord") continue;
+    const key = `${action.round}:${action.phase}`;
+    if (!groups.has(key)) groups.set(key, { round: action.round, phase: action.phase, lines: [] });
+    groups.get(key).lines.push(plainAction(state, action));
+  }
+  const order = { ashFall: 1, lumination: 2, dawnAccord: 3 };
+  const title = { ashFall: "Ash Fall", lumination: "Lumination", dawnAccord: "Dawn Accord" };
+  const currentKey = `${state.round}:${state.phase}`;
+  const segments = [...groups.values()].sort((a, b) => b.round - a.round || (order[b.phase] || 0) - (order[a.phase] || 0));
+  return {
+    current: groups.get(currentKey)?.lines || [],
+    archive: segments.filter((segment) => `${segment.round}:${segment.phase}` !== currentKey).map((segment) => ({
+      id: `${segment.round}:${segment.phase}`,
+      title: `${title[segment.phase] || segment.phase} ${segment.round}`,
+      lines: segment.lines,
+    })),
+  };
+}
+
+function voteRows(state) {
+  return Object.entries(state.votes || {}).filter(([, choice]) => choice && choice !== "SAVE").map(([id, choice]) => ({
+    name: personName(state, id),
+    choice: choice === NO_EXEC ? "No execution" : choice === "skip" ? "Skip" : personName(state, choice),
+  }));
 }
 
 function seatWon(state, self) {

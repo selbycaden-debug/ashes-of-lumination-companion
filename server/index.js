@@ -26,7 +26,6 @@ function save(db) {
     copy.games[code] = {
       code: game.code,
       gmToken: game.gmToken,
-      agentKey: game.agentKey,
       gmName: game.gmName,
       seats: game.seats || {},
       chats: game.chats || [],
@@ -103,22 +102,8 @@ export function start(port = 0) {
     return null;
   }
 
-  function summaryText(state) {
-    const lines = [
-      `Ashes of Lumination. Phase ${state.phase}, round ${state.round}.`,
-      state.winner ? `Over: ${state.winner}` : "In play.",
-      state.nightOfPeace ? "This Ash Fall is a night of peace." : "",
-      state.pendingParadoxFlip ? "Waiting on the Paradox coin." : "",
-      "Players:",
-      ...state.players.map((p) => `- ${p.name}: ${p.alive ? "alive" : "dead"}, ${p.roleId || "undealt"}, ${p.team}${p.ashTouched ? ", Ash Touched" : ""}${p.mireTouched ? ", Mire Touched" : ""}`),
-      "Recent log:",
-      ...state.log.slice(0, 12).map((l) => l.text),
-    ];
-    return lines.filter(Boolean).join("\n");
-  }
-
   function present(game, viewer) {
-    return viewFor(game.engine, viewer, { code: game.code, agentKey: game.agentKey, chats: game.chats || [], statements: game.statements || [] });
+    return viewFor(game.engine, viewer, { code: game.code, chats: game.chats || [], statements: game.statements || [] });
   }
 
   function broadcast(game) {
@@ -136,20 +121,14 @@ export function start(port = 0) {
     if (action.type === "chat") {
       const text = String(action.text || "").trim().slice(0, 800);
       if (!text) throw new Error("Write a message.");
-      const channel = action.channel === "ashen" ? "ashen" : "gm";
+      if (action.channel === "ashen" || action.channel === "lumen") throw new Error("Team chat is closed. Talk at the table.");
       const named = game.engine.players.find((p) => p.id === action.playerId) || game.engine.players.find((p) => p.name === action.playerId);
       const playerId = named?.id || action.playerId;
-      if (channel === "ashen") {
-        const who = game.engine.players.find((p) => p.id === playerId);
-        if (!who || who.team !== "Ashen") throw new Error("That chat is for the Ashen.");
-        game.chats.push({ id: game.seq++, channel, from: "player", playerId, name: who.name, text });
-      } else {
-        const who = game.engine.players.find((p) => p.id === playerId) || game.engine.players.find((p) => p.name === action.seatName);
-        const from = action.from === "ahsoka" ? "ahsoka" : action.from === "gm" ? "gm" : "player";
-        const seatName = who?.name || action.seatName || "";
-        const name = from === "ahsoka" ? "Ahsoka (GM)" : from === "gm" ? "GM" : seatName || "Player";
-        game.chats.push({ id: game.seq++, channel: "gm", from, playerId: who?.id || playerId, name, seatName, text });
-      }
+      const who = game.engine.players.find((p) => p.id === playerId) || game.engine.players.find((p) => p.name === action.seatName);
+      const from = action.from === "gm" ? "gm" : "player";
+      const seatName = who?.name || action.seatName || "";
+      const name = from === "gm" ? "GM" : seatName || "Player";
+      game.chats.push({ id: game.seq++, channel: "gm", from, playerId: who?.id || playerId, name, seatName, text });
       persist();
       broadcast(game);
       return;
@@ -176,17 +155,6 @@ export function start(port = 0) {
     if (game.engine.phase === "ashFall" && phaseBefore !== "ashFall") game.statements = [];
     persist();
     broadcast(game);
-  }
-
-  function agentGame(req, code) {
-    const game = db.games[code];
-    const key = req.headers["x-agent-key"];
-    if (!game || !key || key !== game.agentKey) {
-      const error = new Error("That agent key does not open this game.");
-      error.status = 401;
-      throw error;
-    }
-    return game;
   }
 
   const server = http.createServer(async (req, res) => {
@@ -218,7 +186,6 @@ export function start(port = 0) {
       const game = {
         code,
         gmToken: makeToken(),
-        agentKey: makeToken(),
         gmName,
         seats: {},
         chats: [],
@@ -228,7 +195,7 @@ export function start(port = 0) {
       };
       db.games[code] = game;
       persist();
-      send(res, 200, { ok: true, code, gmToken: game.gmToken, agentKey: game.agentKey, gmName });
+      send(res, 200, { ok: true, code, gmToken: game.gmToken, gmName });
       return;
     }
 
@@ -248,42 +215,9 @@ export function start(port = 0) {
       return;
     }
 
-    const agent = url.pathname.match(/^\/api\/agent\/([A-Z0-9]{4})(?:\/(state|summary|chat|action))?$/);
-    if (agent) {
-      const game = agentGame(req, agent[1]);
-      const leaf = agent[2] || "state";
-      if (req.method === "GET" && leaf === "summary") {
-        send(res, 200, summaryText(game.engine), "text/plain; charset=utf-8");
-        return;
-      }
-      if (req.method === "GET" && leaf === "state") {
-        const state = present(game, { kind: "gm" });
-        send(res, 200, { ok: true, summary: summaryText(game.engine), log: state.log, state });
-        return;
-      }
-      if (req.method === "GET" && leaf === "chat") {
-        const wanted = url.searchParams.get("playerId");
-        const person = game.engine.players.find((p) => p.id === wanted || p.name === wanted);
-        const playerId = person?.id || wanted;
-        const chats = (game.chats || []).filter((c) => c.channel === "gm" && c.playerId === playerId);
-        send(res, 200, { ok: true, playerId, chats });
-        return;
-      }
-      if (req.method === "POST" && leaf === "chat") {
-        const body = await readBody(req);
-        const person = game.engine.players.find((p) => p.id === body.playerId || p.name === body.playerId);
-        mutate(game, { type: "chat", channel: "gm", from: "ahsoka", playerId: person?.id || body.playerId, text: body.text });
-        const chats = (game.chats || []).filter((c) => c.channel === "gm" && c.playerId === (person?.id || body.playerId));
-        send(res, 200, { ok: true, chats });
-        return;
-      }
-      if (req.method === "POST" && leaf === "action") {
-        const body = await readBody(req);
-        mutate(game, body);
-        send(res, 200, { ok: true, summary: summaryText(game.engine), state: present(game, { kind: "gm" }) });
-        return;
-      }
-      throw new Error("Unknown agent route.");
+    if (url.pathname.startsWith("/api/agent")) {
+      send(res, 404, { ok: false, error: "There is no agent API." });
+      return;
     }
 
     const session = findToken((req.headers.authorization || "").replace(/^Bearer\s+/i, ""));
