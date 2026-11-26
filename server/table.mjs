@@ -21,6 +21,14 @@ import {
   startRound,
   tallies,
   winnerLabel,
+  addLog,
+  rulebookFor,
+  countTeams,
+  suggestSoulboundPair,
+  soulboundRequired,
+  hasSoulboundPair,
+  MAX_PLAYERS,
+  buildReminders,
 } from "../sim/dist/engine.js";
 import { applyScriptAction, legalAshMoves, legalDayMoves } from "../sim/lib/actions.mjs";
 
@@ -43,13 +51,18 @@ export function reduce(state, action) {
       const name = cleanName(action.name);
       if (!name) throw new Error("Enter a name.");
       if (state.setupNames.some((n) => n.toLowerCase() === name.toLowerCase())) throw new Error("That name is already at the table.");
-      if (state.setupNames.length >= 20) throw new Error("This table is full.");
+      if (state.setupNames.length >= MAX_PLAYERS) throw new Error("This table is full.");
       return { ...state, setupNames: state.setupNames.concat(name) };
     }
     case "reorder": {
       if (state.dealt) throw new Error("The seating is locked.");
       const names = state.setupNames.slice();
-      const i = names.indexOf(action.name);
+      let i = action.name ? names.indexOf(action.name) : -1;
+      if (i < 0 && typeof action.playerId === "string" && action.playerId.startsWith("seat")) {
+        const n = Number(action.playerId.slice(4));
+        if (Number.isInteger(n)) i = n;
+      }
+      if (i < 0 && action.playerId) i = names.indexOf(action.playerId);
       const j = i + (action.dir === "up" ? -1 : 1);
       if (i < 0 || j < 0 || j >= names.length) return state;
       const swap = names[i];
@@ -64,6 +77,8 @@ export function reduce(state, action) {
       if (typeof action.testCutoff75 === "boolean") next.testCutoff75 = action.testCutoff75;
       if (typeof action.atFalsePct === "number") next.atFalsePct = Math.max(0, Math.min(100, Math.round(action.atFalsePct)));
       if (action.unalignedPick === -1 || action.unalignedPick === 0 || action.unalignedPick === 1) next.unalignedPick = action.unalignedPick;
+      if (action.ashenPick === -1 || action.ashenPick === 3 || action.ashenPick === 4) next.ashenPick = action.ashenPick;
+      if (action.unalignedWide === -1 || action.unalignedWide === 1 || action.unalignedWide === 2) next.unalignedWide = action.unalignedWide;
       if (action.designDefaults && typeof action.designDefaults === "object") {
         next.designDefaults = { ...(state.designDefaults || {}) };
         for (const [id, value] of Object.entries(action.designDefaults)) {
@@ -90,9 +105,27 @@ export function reduce(state, action) {
       if (!state.dealt) throw new Error("Deal first.");
       return setSoulboundPair(state, action.a, action.b);
     }
-    case "start": {
-      if (!state.dealt || state.phase !== "setup") throw new Error("Deal roles before the first Ash Fall.");
-      return startRound(state, true);
+    case "start":
+      return beginGame(state);
+    case "suggest-soulbound": {
+      if (!state.dealt) throw new Error("Deal first.");
+      return suggestSoulboundPair(state);
+    }
+    case "mind-override": {
+      if (!state.dealt) throw new Error("Deal first.");
+      const shown = action.shown && typeof action.shown === "object" ? action.shown : {};
+      const forced = { ...(state.forcedMindMasks || {}) };
+      const masks = { ...(state.mindMasks || {}) };
+      for (const [playerId, roleId] of Object.entries(shown)) {
+        if (!state.players.some((p) => p.id === playerId)) continue;
+        if (!ROLES.some((r) => r.id === roleId && r.team === "Lumen")) continue;
+        forced[playerId] = roleId;
+        masks[playerId] = roleId;
+      }
+      return addLog(
+        { ...state, forcedMindMasks: forced, mindMasks: masks },
+        "GM updated the Ashen Mind list. The next snapshot uses it.",
+      );
     }
     case "submit":
       return submit(state, action);
@@ -151,6 +184,10 @@ function submit(state, action) {
     for (const id of action.ids) next = applyScriptAction(next, { player: player.id, action: "invite", target: id });
     return next;
   }
+  if (script.action === "scar") script.action = "dayKill";
+  if (script.target && script.target2 && String(script.target) === String(script.target2)) {
+    throw new Error("Pick two different players.");
+  }
   if (script.action === "reveal" || script.action === "recruit-shield") {
     if (script.action === "recruit-shield") return applyScriptAction(state, { player: player.id, action: "syndShield", on: true });
     throw new Error("That action is not on this role's screen.");
@@ -159,10 +196,18 @@ function submit(state, action) {
   return applyScriptAction(state, script);
 }
 
+function beginGame(state) {
+  if (!state.dealt || state.phase !== "setup") throw new Error("Deal roles before the first Ash Fall.");
+  if (soulboundRequired(state) && !hasSoulboundPair(state)) {
+    throw new Error("Soulbound is required in every game with 10 or more players. Place a pair before Ash Fall.");
+  }
+  return startRound(state, true);
+}
+
 function advance(state) {
   if (state.pendingParadoxFlip) throw new Error("Enter the Paradox coin first.");
   if (state.winner) throw new Error("The game is over.");
-  if (state.phase === "setup") return startRound(state, true);
+  if (state.phase === "setup") return beginGame(state);
   if (state.phase === "ashFall") return resolveAshFall(state);
   if (state.phase === "lumination") return resolveLumination(answerSelfKnownQuestion(state));
   if (state.phase === "dawnAccord") {
@@ -337,6 +382,12 @@ export function viewFor(state, viewer, extras) {
       ? state.players.map((p) => ({ id: p.id, name: p.name, roleId: p.roleId, roleName: roleOf(p.roleId).name, alignment: p.team.toLowerCase(), alive: p.alive }))
       : null,
     code: extras.code,
+    rulebook: rulebookFor(
+      state.dealt ? state.players.length : state.setupNames.length,
+      state.dealt ? state.dealtCounts || countTeams(state.players) : null,
+    ),
+    soulboundRequired: Boolean(state.dealt && soulboundRequired(state)),
+    soulboundPlaced: Boolean(state.dealt && hasSoulboundPair(state)),
   };
   if (viewer.kind === "gm") {
     const cut = state.dealt ? cutoffInfo(state) : null;
@@ -349,6 +400,8 @@ export function viewFor(state, viewer, extras) {
         testCutoff75: state.testCutoff75 === true,
         atFalsePct: state.atFalsePct,
         unalignedPick: state.unalignedPick,
+        ashenPick: state.ashenPick === 3 || state.ashenPick === 4 ? state.ashenPick : -1,
+        unalignedWide: state.unalignedWide === 1 || state.unalignedWide === 2 ? state.unalignedWide : -1,
         designDefaults: state.designDefaults || {},
       },
       defaults: DESIGN_DEFAULTS,
@@ -377,6 +430,7 @@ export function viewFor(state, viewer, extras) {
       log: state.log.map((l) => ({ id: l.id, text: l.text, secret: true })),
       chats: extras.chats,
       tallies: state.phase === "dawnAccord" ? tallies(state) : [],
+      reminders: buildReminders(state),
     };
   }
   const self = state.players.find((p) => p.id === viewer.playerId);
@@ -386,7 +440,7 @@ export function viewFor(state, viewer, extras) {
       kind: "player",
       you: { id: viewer.playerId, name: viewer.name || "Player", alive: true, roleId: null, inbox: [], notes: "" },
       menu: [],
-      chats: extras.chats.filter((c) => c.channel === "gm" && c.playerId === viewer.playerId),
+      chats: chatsFor(extras.chats, null, viewer),
     };
   }
   const role = roleOf(self.roleId);
@@ -408,13 +462,33 @@ export function viewFor(state, viewer, extras) {
       inbox: state.results.filter((r) => r.playerId === self.id).map((r) => ({ text: r.text })),
       notes: self.notes || "",
       teammates,
-      won: Boolean(state.winner) && (self.team === "Lumen" ? state.winner === "lumen" : self.team === "Ashen" ? state.winner === "ashen" : false),
+      won: seatWon(state, self),
       echo: self.roleId === "the-echo-thief" ? (state.echoCopyRoleId ? roleOf(state.echoCopyRoleId).name : "") : null,
       effective: self.tempRoleId ? roleOf(self.tempRoleId).name : "",
     },
     menu: menuFor(state, self),
-    chats: extras.chats.filter((c) => (c.channel === "gm" && c.playerId === self.id) || (c.channel === "ashen" && self.team === "Ashen")),
+    chats: chatsFor(extras.chats, self, viewer),
   };
+}
+
+function chatsFor(chats, self, viewer) {
+  return (chats || []).filter((c) => {
+    if (c.channel === "ashen") return Boolean(self && self.team === "Ashen");
+    if (c.channel !== "gm") return false;
+    if (self && c.playerId === self.id) return true;
+    if (!self && viewer.playerId && c.playerId === viewer.playerId) return true;
+    if (viewer.name && c.seatName === viewer.name) return true;
+    return false;
+  });
+}
+
+function seatWon(state, self) {
+  if (!state.winner) return false;
+  if (state.winner === "lumen") return self.team === "Lumen";
+  if (state.winner === "ashen") return self.team === "Ashen";
+  if (state.winner === "shadow") return self.roleId === "the-shadow-blade";
+  if (state.winner === "syndic") return self.alive && self.syndicateMember && self.team !== "Ashen";
+  return false;
 }
 
 export { DESIGN_DEFAULTS, ROLES };

@@ -43,10 +43,23 @@ test("five phones sit a full night, day, and vote", async ({ browser }) => {
   }
 
   await expect(gm.getByTestId("seat-list")).toContainText("Eli");
+  await gm.getByTestId("open-rulebook").click();
+  await expect(gm.getByTestId("rulebook-headline")).toHaveText("The main goal is always to kill the Ashen Tyrant.");
+  await expect(gm.getByTestId("rulebook-band")).toContainText("Ashen: 1");
+  await expect(gm.getByTestId("rulebook-band")).toContainText("Unaligned: 0");
+  await expect(gm.getByTestId("rulebook-band")).toContainText("Lumen: 4");
+  await gm.getByTestId("rulebook").getByRole("button", { name: "Close" }).click();
+  await players[0].getByTestId("open-rulebook").click();
+  await expect(players[0].getByTestId("rulebook")).toContainText("wins when every living player is the Syndic");
+  await expect(players[0].getByTestId("rulebook")).toContainText("wins alone if last standing");
+  await players[0].getByTestId("rulebook").getByRole("button", { name: "Close" }).click();
   await gm.getByTestId("setup-autofill").click();
   await expect(gm.getByRole("combobox").first()).not.toHaveValue("");
   await gm.getByTestId("deal").click();
   await expect(gm.getByTestId("gm-table")).toContainText("The Ashen Tyrant");
+  await gm.getByTestId("open-rulebook").click();
+  await expect(gm.getByTestId("rulebook-dealt")).toContainText("This deal:");
+  await gm.getByTestId("rulebook").getByRole("button", { name: "Close" }).click();
   await expect(players[0].getByTestId("role-name")).toBeVisible();
   await gm.getByTestId("advance").click();
   await expect(gm.getByRole("heading", { name: /Ash Fall/ })).toBeVisible();

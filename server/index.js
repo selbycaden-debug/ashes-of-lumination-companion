@@ -144,10 +144,11 @@ export function start(port = 0) {
         if (!who || who.team !== "Ashen") throw new Error("That chat is for the Ashen.");
         game.chats.push({ id: game.seq++, channel, from: "player", playerId, name: who.name, text });
       } else {
-        const who = game.engine.players.find((p) => p.id === playerId);
+        const who = game.engine.players.find((p) => p.id === playerId) || game.engine.players.find((p) => p.name === action.seatName);
         const from = action.from === "ahsoka" ? "ahsoka" : action.from === "gm" ? "gm" : "player";
-        const name = from === "ahsoka" ? "Ahsoka (GM)" : from === "gm" ? "GM" : who?.name || "Player";
-        game.chats.push({ id: game.seq++, channel: "gm", from, playerId, name, text });
+        const seatName = who?.name || action.seatName || "";
+        const name = from === "ahsoka" ? "Ahsoka (GM)" : from === "gm" ? "GM" : seatName || "Player";
+        game.chats.push({ id: game.seq++, channel: "gm", from, playerId: who?.id || playerId, name, seatName, text });
       }
       persist();
       broadcast(game);
@@ -163,7 +164,16 @@ export function start(port = 0) {
       broadcast(game);
       return;
     }
+    const phaseBefore = game.engine.phase;
     game.engine = reduce(game.engine, action);
+    if (action.type === "deal") {
+      for (const chat of game.chats || []) {
+        if (game.engine.players.some((p) => p.id === chat.playerId)) continue;
+        const match = game.engine.players.find((p) => p.name === chat.seatName || p.name === chat.name);
+        if (match) chat.playerId = match.id;
+      }
+    }
+    if (game.engine.phase === "ashFall" && phaseBefore !== "ashFall") game.statements = [];
     persist();
     broadcast(game);
   }
@@ -292,6 +302,7 @@ export function start(port = 0) {
         const allowed = new Set(["submit", "vote", "notes", "chat", "invite-response"]);
         if (!allowed.has(body.type)) throw new Error("Players cannot do that.");
         body.playerId = session.viewer.playerId;
+        body.seatName = session.viewer.name;
         if (body.type === "chat") body.from = "player";
       }
       mutate(session.game, body);

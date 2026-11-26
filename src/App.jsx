@@ -228,13 +228,26 @@ function GmScreen({ state, act, error, connected, onLeave }) {
           <p className="text-xs uppercase tracking-[0.22em] text-[#e6c27a]">GM</p>
           <h1 className="serif text-4xl">Round {state.round || "—"} · {labelPhase(state)}</h1>
         </div>
-        <button className="text-sm underline" onClick={onLeave}>Leave</button>
+        <div className="flex gap-3">
+          <RulebookButton state={state} />
+          <button className="text-sm underline" onClick={onLeave}>Leave</button>
+        </div>
       </header>
       {!state.dealt ? (
         <Lobby state={state} act={act} link={link} />
       ) : (
         <>
           <PhaseBar state={state} act={act} />
+          {state.phase === "setup" && <SoulboundCard state={state} act={act} />}
+          {state.reminders?.length > 0 && (
+            <section className="panel mb-4 p-4 text-sm">
+              <h2 className="serif text-xl">Don't forget</h2>
+              <ul className="mt-2 grid gap-2">
+                {state.reminders.map((line) => <li key={line}>{line}</li>)}
+              </ul>
+            </section>
+          )}
+          <PublicNotices state={state} />
           <div className="mb-4 grid grid-cols-4 gap-2 text-sm">
             {["table", "chat", "log", "ahsoka"].map((id) => (
               <button key={id} className={`tap rounded-xl border border-[#4a342c] ${tab === id ? "bg-[#e6c27a] text-[#1a100e]" : ""}`} onClick={() => setTab(id)}>
@@ -268,8 +281,8 @@ function Lobby({ state, act, link }) {
             <li key={seat.id} className="flex items-center justify-between gap-2">
               <span>{index + 1}. {seat.name}</span>
               <span className="flex gap-2">
-                <button className="tap rounded-lg border border-[#4a342c] px-3" onClick={() => act({ type: "reorder", playerId: seat.id, dir: "up" })}>Up</button>
-                <button className="tap rounded-lg border border-[#4a342c] px-3" onClick={() => act({ type: "reorder", playerId: seat.id, dir: "down" })}>Down</button>
+                <button className="tap rounded-lg border border-[#4a342c] px-3" onClick={() => act({ type: "reorder", name: seat.name, playerId: seat.id, dir: "up" })}>Up</button>
+                <button className="tap rounded-lg border border-[#4a342c] px-3" onClick={() => act({ type: "reorder", name: seat.name, playerId: seat.id, dir: "down" })}>Down</button>
               </span>
             </li>
           ))}
@@ -299,6 +312,26 @@ function Setup({ state, act }) {
           <option value="1">1 Unaligned</option>
         </select>
       </label>
+      {count >= 13 && (
+        <label className="grid gap-1 text-sm">
+          Ashen at {count <= 15 ? "13–15" : "16–20"} players
+          <select data-testid="ashen-pick" className="tap rounded-sm border border-[#8a7038] bg-[#07070a] px-3" value={String(state.settings.ashenPick ?? -1)} onChange={(e) => act({ type: "settings", ashenPick: Number(e.target.value) })}>
+            <option value="-1">{count <= 15 ? "Chart default (3 at 13, 4 at 14–15)" : "Chart default (4)"}</option>
+            <option value="3">3 Ashen</option>
+            <option value="4">4 Ashen</option>
+          </select>
+        </label>
+      )}
+      {count >= 16 && (
+        <label className="grid gap-1 text-sm">
+          Unaligned at 16–20 players
+          <select data-testid="unaligned-wide" className="tap rounded-sm border border-[#8a7038] bg-[#07070a] px-3" value={String(state.settings.unalignedWide ?? -1)} onChange={(e) => act({ type: "settings", unalignedWide: Number(e.target.value) })}>
+            <option value="-1">Chart default (1 at 16–17, 2 at 18–20)</option>
+            <option value="1">1 Unaligned</option>
+            <option value="2">2 Unaligned</option>
+          </select>
+        </label>
+      )}
       {count >= 7 ? (
         <Toggle label="Test rule: 75% succession cutoff (off by default; for playtesting, not a core rule)." checked={state.settings.testCutoff75} testid="toggle-cutoff" onChange={(testCutoff75) => act({ type: "settings", testCutoff75 })} />
       ) : (
@@ -320,7 +353,7 @@ function Setup({ state, act }) {
           />
         ))}
       </div>
-      <button data-testid="deal" className="tap rounded-xl bg-[#e07040] font-semibold text-[#1a100e]" onClick={() => act({ type: "deal" })}>Deal and begin Ash Fall</button>
+      <button data-testid="deal" className="tap rounded-xl bg-[#e07040] font-semibold text-[#1a100e]" onClick={() => act({ type: "deal" })}>Deal roles</button>
     </section>
   );
 }
@@ -336,13 +369,19 @@ function Toggle({ label, checked, onChange, testid }) {
 
 function PhaseBar({ state, act }) {
   const label = state.phase === "setup" ? "Begin Ash Fall" : state.phase === "ashFall" ? (state.nightOfPeace ? "Resolve the night of peace" : "Resolve Ash Fall") : state.phase === "lumination" ? "Resolve Lumination" : state.phase === "dawnAccord" ? "Resolve the Dawn Accord" : "Game over";
+  const needSoul = state.phase === "setup" && state.soulboundRequired && !state.soulboundPlaced;
   return (
     <div className="panel mb-4 flex flex-wrap items-center justify-between gap-3 p-4">
       <div>
         <p className="text-xs uppercase tracking-[0.18em] text-[#e6c27a]">{state.nightOfPeace ? "Night of peace" : labelPhase(state)}</p>
-        <p className="text-sm text-[#d9c7b6]">{state.winReason || "Every action is waiting on you."}</p>
+        <p className="text-sm text-[#d9c7b6]">{state.winReason || (needSoul ? "Place a Soulbound pair, then begin Ash Fall." : "Every action is waiting on you.")}</p>
+        {state.tallies?.length > 0 && (
+          <ul className="mt-2 text-sm" data-testid="tallies">
+            {state.tallies.map((row) => <li key={row.id}>{row.name}: {row.votes}</li>)}
+          </ul>
+        )}
       </div>
-      {state.phase !== "ended" && state.winner == null && !state.block && (
+      {state.phase !== "ended" && state.winner == null && !state.block && !needSoul && (
         <button data-testid="advance" className="tap rounded-xl bg-[#e6c27a] px-4 font-semibold text-[#1a100e]" onClick={() => act({ type: "resolve" })}>{label}</button>
       )}
       {state.block?.type === "coin" && (
@@ -514,9 +553,12 @@ function PlayerScreen({ state, act, error, connected, onLeave }) {
           <p className="text-xs uppercase tracking-[0.22em] text-[#e6c27a]">{you.name}</p>
           <h1 className="serif text-4xl">{labelPhase(state)}</h1>
         </div>
-        <button className="text-sm underline" onClick={onLeave}>Leave</button>
+        <div className="flex gap-3">
+          <RulebookButton state={state} />
+          <button className="text-sm underline" onClick={onLeave}>Leave</button>
+        </div>
       </header>
-      {state.nightOfPeace && state.phase === "ashfall" && <p className="mb-3 text-sm text-[#e6c27a]">A night of peace. The inherited kill does not fall.</p>}
+      {state.nightOfPeace && state.phase === "ashFall" && <p className="mb-3 text-sm text-[#e6c27a]" data-testid="night-of-peace">A night of peace. The inherited kill does not fall.</p>}
       <div className="mb-4 grid grid-cols-4 gap-2 text-sm">
         {["role", "act", "chat", "notes"].map((id) => (
           <button key={id} className={`tap rounded-xl border border-[#4a342c] ${tab === id ? "bg-[#e07040] text-[#1a100e]" : ""}`} onClick={() => setTab(id)}>{id === "act" ? "Act" : id[0].toUpperCase() + id.slice(1)}</button>
@@ -535,6 +577,15 @@ function RoleHome({ state }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="grid gap-3">
+      <PublicNotices state={state} />
+      {state.ballot?.length > 0 && (
+        <section className="panel p-4" data-testid="ballot">
+          <h3 className="serif text-xl">Ballot</h3>
+          <ul className="mt-2">
+            {state.ballot.map((row) => <li key={row.id}>{row.name}</li>)}
+          </ul>
+        </section>
+      )}
       <article className="panel p-4">
         {you.roleId ? (
           <div>
@@ -626,7 +677,7 @@ function ActPanel({ state, act }) {
   const [statement, setStatement] = useState("");
   return (
     <div className="grid gap-3" data-testid="act-panel">
-      {state.phase === "lobby" && <p className="panel p-4">The GM is still seating the table.</p>}
+      {!state.dealt && <p className="panel p-4">The GM is still seating the table.</p>}
       {state.phase === "lumination" && state.you.alive && (
         <form data-testid="form-statement" className="panel grid gap-2 p-4" onSubmit={(e) => { e.preventDefault(); act({ type: "submit", kind: "statement", text: statement }); }}>
           <label className="text-sm">Public statement</label>
@@ -661,25 +712,19 @@ function ActionCard({ item, act }) {
     await run();
     } catch { /* the seat hook surfaces the error */ }
     async function run() {
-    if (item.kind === "vote") return act({ type: "vote", choice: targetId });
-    if (item.id === "nomination") return act({ type: "submit", kind: "nomination", targetId });
-    if (item.id === "shot") return act({ type: "submit", kind: "shot", targetId });
-    if (item.id === "scar") return act({ type: "submit", kind: "scar", targetId });
-    if (item.id === "summon") return act({ type: "submit", kind: "summon", targetId, targetId2 });
-    if (item.id === "invites") return act({ type: "submit", kind: "invites", ids });
-    if (item.kind === "question") return act({ type: "submit", kind: "question", targetId, roleId });
-    if (item.kind === "button") {
-      if (item.id === "reveal") return act({ type: "submit", kind: "reveal" });
-      if (item.id === "recruit-shield") return act({ type: "submit", kind: "recruit-shield" });
-    }
-    return act({
-      type: "submit",
-      kind: "night",
-      ability: item.ability || item.id,
-      targetId: targetId === "skip" ? null : targetId,
-      targetId2,
-      skip: targetId === "skip",
-    });
+      const skip = targetId === "skip";
+      if (item.kind === "vote") return act({ type: "vote", choice: targetId });
+      if (item.id === "nomination") return act({ type: "submit", kind: "nomination", targetId });
+      if (item.kind === "button") return act({ type: "submit", ability: item.ability || item.id });
+      return act({
+        type: "submit",
+        ability: item.ability || item.id,
+        targetId: skip ? null : targetId,
+        targetId2: skip ? null : targetId2,
+        roleId,
+        ids,
+        skip,
+      });
     }
   }
   if (item.kind === "button") {
@@ -689,7 +734,7 @@ function ActionCard({ item, act }) {
     <form data-testid={`form-${item.id}`} className="panel grid gap-2 p-4" onSubmit={submit}>
       <p className="text-sm">{item.label}</p>
       {item.targets && (
-        <select data-testid="action-target" className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={targetId} onChange={(e) => setTargetId(e.target.value)} required>
+        <select data-testid="action-target" className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={targetId} onChange={(e) => { setTargetId(e.target.value); if (e.target.value === targetId2) setTargetId2(""); }} required>
           <option value="">Choose</option>
           {item.allowSkip && <option value="skip">Skip</option>}
           {item.targets.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
@@ -698,7 +743,7 @@ function ActionCard({ item, act }) {
       {item.kind === "targets2" && (
         <select data-testid="action-target-2" className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={targetId2} onChange={(e) => setTargetId2(e.target.value)} required>
           <option value="">Second player</option>
-          {item.targets.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+          {item.targets.filter((t) => t.id !== targetId).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
       )}
       {item.kind === "question" && (
@@ -764,6 +809,110 @@ function Reveal({ reveal, won }) {
         {reveal.map((row) => <li key={row.id}>{row.name} · {row.roleName} · {row.alignment}{row.alive ? "" : " · dead"}</li>)}
       </ul>
     </section>
+  );
+}
+
+function PublicNotices({ state }) {
+  if (!state.publicLog?.length) return null;
+  return (
+    <section className="panel p-4" data-testid="public-log">
+      <h3 className="serif text-xl">At the table</h3>
+      {state.publicLog.map((line) => <p key={line.id} className="mt-2 text-sm">{line.text}</p>)}
+    </section>
+  );
+}
+
+function SoulboundCard({ state, act }) {
+  const [a, setA] = useState(state.players[0]?.id || "");
+  const [b, setB] = useState(state.players[1]?.id || "");
+  return (
+    <section className="panel mb-4 grid gap-2 p-4" data-testid="soulbound-card">
+      <h2 className="serif text-2xl">Soulbound</h2>
+      <p className="text-sm text-[#d9c7b6]">{state.soulboundRequired ? "Required before Round 1 at 10 or more players. The pair is not told." : "Optional below 10 players. The pair is not told."}</p>
+      {state.soulboundPlaced && <p className="text-sm text-[#e6c27a]">A pair is placed.</p>}
+      <select data-testid="soulbound-a" className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={a} onChange={(e) => setA(e.target.value)}>
+        {state.players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+      </select>
+      <select data-testid="soulbound-b" className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={b} onChange={(e) => setB(e.target.value)}>
+        {state.players.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+      </select>
+      <div className="flex gap-2">
+        <button type="button" data-testid="soulbound-place" className="tap rounded-xl border border-[#e6c27a] px-3" onClick={() => act({ type: "soulbound", a, b })}>Place this pair</button>
+        <button type="button" data-testid="soulbound-suggest" className="tap rounded-xl border border-[#e6c27a] px-3" onClick={() => act({ type: "suggest-soulbound" })}>Suggest a pair</button>
+      </div>
+    </section>
+  );
+}
+
+function RulebookButton({ state }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" data-testid="open-rulebook" className="text-sm underline" onClick={() => setOpen(true)}>Rulebook</button>
+      {open && <Rulebook state={state} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+
+function Rulebook({ state, onClose }) {
+  const book = state.rulebook || {};
+  const goals = [];
+  for (const goal of book.goals || []) {
+    const last = goals[goals.length - 1];
+    if (last && last.side === goal.side) last.texts.push(goal.text);
+    else goals.push({ side: goal.side, texts: [goal.text] });
+  }
+  return (
+    <div className="fixed inset-0 z-20 overflow-auto bg-[#140e0c]/95 p-4" data-testid="rulebook">
+      <div className="mx-auto grid max-w-3xl gap-4">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="serif text-3xl">Player rulebook</h2>
+          <button className="tap underline" onClick={onClose}>Close</button>
+        </div>
+        <p className="text-lg text-[#e6c27a]" data-testid="rulebook-headline">{book.headline}</p>
+        <p className="text-sm text-[#d9c7b6]">{book.note}</p>
+        <section className="panel p-4">
+          <h3 className="serif text-2xl">{book.playerCount >= book.minPlayers ? `${book.playerCount} players at this table` : `${book.playerCount || 0} seated. The deal starts at ${book.minPlayers}.`}</h3>
+          {book.band ? (
+            <ul className="mt-3 grid gap-1 text-sm" data-testid="rulebook-band">
+              <li>Ashen: {book.band.ashen}</li>
+              <li>Unaligned: {book.band.unaligned}</li>
+              <li>Lumen: {book.band.lumen}</li>
+            </ul>
+          ) : <p className="mt-2 text-sm text-[#d9c7b6]">The chart below covers {book.minPlayers} to {book.maxPlayers} players.</p>}
+          {book.dealt && (
+            <p className="mt-3 text-sm" data-testid="rulebook-dealt">This deal: {book.dealt.ashen} Ashen, {book.dealt.unaligned} Unaligned, {book.dealt.lumen} Lumen.</p>
+          )}
+        </section>
+        <section className="panel p-4">
+          <h3 className="serif text-2xl">Goals</h3>
+          {goals.map((goal) => (
+            <div key={goal.side} className="mt-3">
+              <h4 className="text-[#e6c27a]">{goal.side}</h4>
+              {goal.texts.map((text) => <p key={text} className="mt-1 text-sm">{text}</p>)}
+            </div>
+          ))}
+        </section>
+        <section className="panel p-4">
+          <h3 className="serif text-2xl">Chart</h3>
+          <table className="mt-2 w-full text-left text-sm" data-testid="rulebook-chart">
+            <thead>
+              <tr className="text-[#b5a394]"><th>Players</th><th>Ashen</th><th>Unaligned</th><th>Lumen</th></tr>
+            </thead>
+            <tbody>
+              {(book.chart || []).map((row) => (
+                <tr key={row.players} className={row.current ? "text-[#e6c27a]" : ""}>
+                  <td>{row.players}</td>
+                  <td>{row.ashen}</td>
+                  <td>{row.unaligned}</td>
+                  <td>{row.lumen}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      </div>
+    </div>
   );
 }
 

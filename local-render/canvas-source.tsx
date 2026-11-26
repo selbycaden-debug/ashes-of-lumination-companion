@@ -134,6 +134,8 @@ type GameState = {
   nominations: Record<string, string>;
   rechargeAt: number;
   unalignedPick: number;
+  ashenPick: number;
+  unalignedWide: number;
   forcedMindMasks: Record<string, string>;
   dawnLivingIds: string[];
   deathCount: number;
@@ -147,6 +149,7 @@ type GameState = {
   successionPasses: number;
   successionOver: boolean;
   peaceRound: number;
+  dealtCounts: { ashen: number; lumen: number; unaligned: number } | null;
 };
 
 const NO_EXEC = "NO_EXEC";
@@ -678,8 +681,46 @@ function shuffle<T>(items: T[]): T[] {
   return a;
 }
 
-function ashenCount(n: number): number {
-  // Caden (Nov 18): games of 5–6 players have 1 Ashen.
+// Caden-approved composition. Edit only this table.
+// Ranges are what a game of that size allows. The GM picks an exact number inside each range.
+// ashenDefault / unalignedDefault are the numbers the deal uses when the GM has not picked.
+// At 7–9, an unaligned pick of -1 (the setup default) still chooses 0 or 1 at random.
+// Everyone else is Lumen. The Ashen Tyrant is always one of the Ashen. Each role is dealt at most once.
+const MIN_PLAYERS = 5;
+const MAX_PLAYERS = 20;
+
+type CompBand = {
+  min: number;
+  max: number;
+  ashenMin: number;
+  ashenMax: number;
+  unalignedMin: number;
+  unalignedMax: number;
+  ashenDefault: (n: number) => number;
+  unalignedDefault: (n: number) => number;
+};
+
+const COMPOSITION: CompBand[] = [
+  { min: 5, max: 6, ashenMin: 1, ashenMax: 1, unalignedMin: 0, unalignedMax: 0, ashenDefault: () => 1, unalignedDefault: () => 0 },
+  { min: 7, max: 9, ashenMin: 2, ashenMax: 2, unalignedMin: 0, unalignedMax: 1, ashenDefault: () => 2, unalignedDefault: (n: number) => (n === 7 ? 0 : 1) },
+  { min: 10, max: 12, ashenMin: 3, ashenMax: 3, unalignedMin: 1, unalignedMax: 1, ashenDefault: () => 3, unalignedDefault: () => 1 },
+  { min: 13, max: 15, ashenMin: 3, ashenMax: 4, unalignedMin: 1, unalignedMax: 1, ashenDefault: (n: number) => (n >= 14 ? 4 : 3), unalignedDefault: () => 1 },
+  // Caden: 16–20 is up to 4 Ashen, so the range is 3–4. The GM picks 3 or 4. Leaving it unset still deals 4.
+  { min: 16, max: 20, ashenMin: 3, ashenMax: 4, unalignedMin: 1, unalignedMax: 2, ashenDefault: () => 4, unalignedDefault: (n: number) => (n >= 18 ? 2 : 1) },
+];
+
+function compositionBand(n: number): CompBand | null {
+  return COMPOSITION.find((band: CompBand) => n >= band.min && n <= band.max) || null;
+}
+
+function rangeText(min: number, max: number): string {
+  return min === max ? String(min) : min + "\u2013" + max;
+}
+
+function ashenCount(n: number, pick?: number): number {
+  const band = compositionBand(n);
+  if (band && band.ashenMin !== band.ashenMax && typeof pick === "number" && pick >= band.ashenMin && pick <= band.ashenMax) return pick;
+  if (band) return band.ashenDefault(n);
   if (n <= 6) return 1;
   if (n <= 9) return 2;
   if (n <= 12) return 3;
@@ -687,21 +728,80 @@ function ashenCount(n: number): number {
   return 4;
 }
 
-function unalignedCount(n: number, pick?: number): number {
+function unalignedCount(n: number, pick?: number, widePick?: number): number {
+  const band = compositionBand(n);
+  if (n >= 7 && n <= 9 && (pick === 0 || pick === 1)) return pick;
+  if (band && n >= 16 && (widePick === band.unalignedMin || widePick === band.unalignedMax)) return widePick;
+  if (band) return band.unalignedDefault(n);
   if (n <= 6) return 0;
-  if (n >= 7 && n <= 9) {
-    if (pick === 0 || pick === 1) return pick;
-    return n === 7 ? 0 : 1;
-  }
   if (n <= 15) return 1;
   return n >= 18 ? 2 : 1;
 }
 
-function resolveUnalignedCount(n: number, pick: number): number {
+function resolveUnalignedCount(n: number, pick: number, widePick?: number): number {
   if (n >= 7 && n <= 9 && (pick === -1 || pick === undefined)) {
     return Math.random() < 0.5 ? 0 : 1;
   }
-  return unalignedCount(n, pick);
+  return unalignedCount(n, pick, widePick);
+}
+
+function countTeams(players: Player[]): { ashen: number; lumen: number; unaligned: number } {
+  return {
+    ashen: players.filter((p: Player) => p.team === "Ashen").length,
+    lumen: players.filter((p: Player) => p.team === "Lumen").length,
+    unaligned: players.filter((p: Player) => p.team === "Unaligned").length,
+  };
+}
+
+// Win lines already used by checkWins and the role cards. The rulebook quotes these; it does not reword them.
+const WIN_LUMEN_ELIMINATED = "Lumen victory: all Ashen and The Shadow Blade are eliminated";
+const WIN_ASHEN_ALL_LUMEN = "Ashen victory: all Lumen are dead.";
+const WIN_ASHEN_PARITY =
+  "Ashen victory: the Ashen have reached parity with the rest of the players: living Ashen, a converted Paradox included, at least every other living player, The Shadow Blade and other Unaligned included (Design default D4, Nov 21 audit). After a takeover parity and 'all Lumen dead' are off (D5).";
+
+function rulebookFor(count: number, dealt: { ashen: number; lumen: number; unaligned: number } | null): {
+  headline: string;
+  playerCount: number;
+  minPlayers: number;
+  maxPlayers: number;
+  note: string;
+  band: { ashen: string; unaligned: string; lumen: string } | null;
+  chart: { players: string; ashen: string; unaligned: string; lumen: string; current: boolean }[];
+  dealt: { ashen: number; lumen: number; unaligned: number } | null;
+  goals: { side: string; text: string }[];
+} {
+  const band = compositionBand(count);
+  const syndic = ROLES.find((r: RoleDef) => r.id === "the-syndic");
+  const blade = ROLES.find((r: RoleDef) => r.id === "the-shadow-blade");
+  return {
+    headline: "The main goal is always to kill the Ashen Tyrant.",
+    playerCount: count,
+    minPlayers: MIN_PLAYERS,
+    maxPlayers: MAX_PLAYERS,
+    note: "The GM picks the exact number inside each range. Everyone else is Lumen. The Ashen Tyrant is always included. Each role is dealt at most once.",
+    band: band
+      ? {
+          ashen: rangeText(band.ashenMin, band.ashenMax),
+          unaligned: rangeText(band.unalignedMin, band.unalignedMax),
+          lumen: rangeText(count - band.ashenMax - band.unalignedMax, count - band.ashenMin - band.unalignedMin),
+        }
+      : null,
+    chart: COMPOSITION.map((row: CompBand) => ({
+      players: rangeText(row.min, row.max),
+      ashen: rangeText(row.ashenMin, row.ashenMax),
+      unaligned: rangeText(row.unalignedMin, row.unalignedMax),
+      lumen: "the rest",
+      current: Boolean(band && row.min === band.min),
+    })),
+    dealt: dealt,
+    goals: [
+      { side: "Lumen", text: WIN_LUMEN_ELIMINATED + "." },
+      { side: "Ashen", text: WIN_ASHEN_PARITY },
+      { side: "Ashen", text: WIN_ASHEN_ALL_LUMEN },
+      { side: "The Syndic", text: syndic ? syndic.short : "" },
+      { side: "The Shadow Blade", text: blade ? blade.short : "" },
+    ],
+  };
 }
 
 function startingCharges(_n: number): number {
@@ -813,7 +913,7 @@ function distributionLabel(n: number, unalignedPick?: number, rechargeAt?: numbe
   if (n <= 6) parts.push("Caden (Nov 18): 5–6 players have 1 Ashen. No Unaligned at 5–6 (Design default D52, Nov 21 audit).");
   if (n >= 7 && n <= 9) parts.push("Caden: Unaligned at 7–9 is a 0–1 range with 2 Ashen; no exact number. The GM picks 0, 1, or random (default: random).");
   if (n >= 13 && n <= 15) parts.push("Ashen at 13–15 is 3–4; the GM picks inside the range (Design default D52, Nov 21 audit). The random deal uses 3 at 13 and 4 at 14–15.");
-  if (n >= 16) parts.push("Unaligned at 16–20 is 1–2; the GM picks inside the range (Design default D52, Nov 21 audit). The random deal uses 1 at 16–17 and 2 at 18–20.");
+  if (n >= 16) parts.push("Caden: Ashen at 16–20 is 3–4 (up to 4); the GM picks the exact number. The chart default deal uses 4. Unaligned at 16–20 is 1–2; the GM picks inside the range (Design default D52, Nov 21 audit). The random deal uses 1 at 16–17 and 2 at 18–20.");
   void rechargeAt;
   parts.push(
     "Charged roles (The Self Known, Sunmark Shooter, The Necroreclaimer, The Red Scar) start with 1 use and hold at most 1. Caden's 5-player rule: a used ability regains its use only after 5 more players have died since it was used. This replaces the old recharge threshold and the 15/10/5 chart. Every death counts: kills, executions, poison, Sunmark shots and Soulbound deaths (Caden, Nov 17–18). 5 deaths at every player count, small games included (Caden, Nov 17 card).",
@@ -920,6 +1020,8 @@ function blankState(): GameState {
     nominations: {},
     rechargeAt: 6,
     unalignedPick: -1,
+    ashenPick: -1,
+    unalignedWide: -1,
     forcedMindMasks: {},
     dawnLivingIds: [],
     deathCount: 0,
@@ -933,6 +1035,7 @@ function blankState(): GameState {
     successionPasses: 0,
     successionOver: false,
     peaceRound: 0,
+    dealtCounts: null,
   };
 }
 
@@ -947,6 +1050,8 @@ function normalizeGameState(s: GameState): GameState {
   const startCount = typeof raw.startCount === "number" && raw.startCount > 0 ? raw.startCount : (s.players.length || 8);
   const rechargeAt = typeof raw.rechargeAt === "number" && raw.rechargeAt > 0 ? raw.rechargeAt : 6;
   const unalignedPick = raw.unalignedPick === 0 || raw.unalignedPick === 1 || raw.unalignedPick === -1 ? raw.unalignedPick : -1;
+  const ashenPick = raw.ashenPick === 3 || raw.ashenPick === 4 ? raw.ashenPick : -1;
+  const unalignedWide = raw.unalignedWide === 1 || raw.unalignedWide === 2 ? raw.unalignedWide : -1;
   const nominations = raw.nominations && typeof raw.nominations === "object" && !Array.isArray(raw.nominations) ? (raw.nominations as Record<string, string>) : {};
   const forcedMindMasks = raw.forcedMindMasks && typeof raw.forcedMindMasks === "object" && !Array.isArray(raw.forcedMindMasks) ? (raw.forcedMindMasks as Record<string, string>) : {};
   return {
@@ -954,6 +1059,8 @@ function normalizeGameState(s: GameState): GameState {
     startCount: startCount,
     rechargeAt: rechargeAt,
     unalignedPick: unalignedPick,
+    ashenPick: ashenPick,
+    unalignedWide: unalignedWide,
     nominations: nominations,
     forcedMindMasks: forcedMindMasks,
     dawnLivingIds: Array.isArray((raw as { dawnLivingIds?: unknown }).dawnLivingIds) ? (raw as { dawnLivingIds: string[] }).dawnLivingIds : [],
@@ -1429,17 +1536,17 @@ function checkWins(state: GameState, civicNow: boolean): GameState {
     if (ashen.length === 0 && !bladeAlive) {
       return addLog(
         { ...state, winner: "lumen" },
-        "Lumen victory: all Ashen and The Shadow Blade are eliminated" + (state.tyrantHasDied ? ", so no one is left to take the Tyrant kill (Caden, Nov 18)." : "."),
+        WIN_LUMEN_ELIMINATED + (state.tyrantHasDied ? ", so no one is left to take the Tyrant kill (Caden, Nov 18)." : "."),
       );
     }
     if (lumen.length === 0) {
-      return addLog({ ...state, winner: "ashen" }, "Ashen victory: all Lumen are dead.");
+      return addLog({ ...state, winner: "ashen" }, WIN_ASHEN_ALL_LUMEN);
     }
     const rest = alive.length - ashen.length;
     if (ashen.length > 0 && ashen.length >= rest) {
       return addLog(
         { ...state, winner: "ashen" },
-        "Ashen victory: the Ashen have reached parity with the rest of the players: living Ashen, a converted Paradox included, at least every other living player, The Shadow Blade and other Unaligned included (Design default D4, Nov 21 audit). After a takeover parity and 'all Lumen dead' are off (D5).",
+        WIN_ASHEN_PARITY,
       );
     }
   }
@@ -1513,10 +1620,10 @@ function mindSnapshot(state: GameState, mind: Player): string {
   return mindSnapshotWith(state, mind).text;
 }
 
-function dealRoles(names: string[], unalignedPick?: number, rechargeAt?: number): { players: Player[]; log: string[] } {
+function dealRoles(names: string[], unalignedPick?: number, rechargeAt?: number, ashenPick?: number, unalignedWide?: number): { players: Player[]; log: string[]; counts: { ashen: number; lumen: number; unaligned: number } } {
   const n = names.length;
-  const aNeed = ashenCount(n);
-  const uNeed = resolveUnalignedCount(n, unalignedPick === undefined ? -1 : unalignedPick);
+  const aNeed = ashenCount(n, ashenPick);
+  const uNeed = resolveUnalignedCount(n, unalignedPick === undefined ? -1 : unalignedPick, unalignedWide);
   const ashenPool = shuffle(
     ROLES.filter((r: RoleDef) => r.team === "Ashen" && r.id !== "the-ashen-tyrant").map((r: RoleDef) => r.id),
   );
@@ -1541,9 +1648,10 @@ function dealRoles(names: string[], unalignedPick?: number, rechargeAt?: number)
     if (roleId === "the-syndic") p.syndicateMember = true;
     return p;
   });
-  const dealLog = [distributionLabel(n, unalignedPick, rechargeAt), "Roles have been dealt. The Ashen Tyrant is in the game."];
+  const teams = countTeams(players);
+  const dealLog = [distributionLabel(n, unalignedPick, rechargeAt), "Roles have been dealt. The Ashen Tyrant is in the game. This deal: " + teams.ashen + " Ashen, " + teams.unaligned + " Unaligned, " + teams.lumen + " Lumen."];
   if (n >= 7 && n <= 9) dealLog.push("Unaligned in this deal: " + uNeed + " (Caden: 0–1 range at 7–9 with 2 Ashen).");
-  return { players: players, log: dealLog };
+  return { players: players, log: dealLog, counts: teams };
 }
 
 function setupStartInfo(state: GameState): GameState {
@@ -2498,7 +2606,7 @@ function ChatPane(props: {
 function applyDeal(prev: GameState, names: string[]): GameState {
   const clean = names.map((n: string) => n.trim()).filter((n: string) => n !== "");
   if (clean.length < 5 || clean.length > 20) return prev;
-  const dealt = dealRoles(clean, prev.unalignedPick, prev.rechargeAt);
+  const dealt = dealRoles(clean, prev.unalignedPick, prev.rechargeAt, prev.ashenPick, prev.unalignedWide);
   let next: GameState = {
     ...blankState(),
     setupNames: clean,
@@ -2510,6 +2618,7 @@ function applyDeal(prev: GameState, names: string[]): GameState {
     ahsokaDraft: prev.ahsokaDraft,
     ahsokaReply: prev.ahsokaReply,
     startCount: clean.length,
+    dealtCounts: dealt.counts,
     atFalsePct: clampPct(prev.atFalsePct),
     testCutoff75: prev.testCutoff75 === true,
     designDefaults: normDesignDefaults(prev.designDefaults),
@@ -2585,6 +2694,7 @@ function applyForcedDeal(
     rechargeAt: rechargeAt,
     unalignedPick: unalignedPick,
     forcedMindMasks: forcedMindMasks,
+    dealtCounts: countTeams(players),
   };
   next = addLog(next, distributionLabel(names.length, unalignedPick, rechargeAt));
   next = addLog(next, "Roles have been assigned (forced deal). The Ashen Tyrant is in the game.");
@@ -2600,7 +2710,8 @@ function submitPlayerAction(prev: GameState, p: Player, label: string, targets: 
     (a: ActionSub) => !(a.round === prev.round && a.phase === phase && a.playerId === p.id && a.label === label),
   );
   if (label.indexOf("Red Scar") >= 0 && phase === "lumination" && !skip && prev.round === 1 && dd(prev, "D47")) {
-    return addLog(prev, p.name + " can't use the Red Scar day kill in Lumination 1 (" + ddTag("D47") + "). Not submitted; the use is not spent.");
+    const text = p.name + " can't use the Red Scar day kill in Lumination 1 (" + ddTag("D47") + "). Not submitted; the use is not spent.";
+    return addResult(addLog(prev, text), p.id, text);
   }
   const sub: ActionSub = {
     id: uid(),
@@ -4849,7 +4960,7 @@ function buildReminders(state: GameState): string[] {
   if (state.phase === "dawnAccord" && state.winner === "") {
     const noms = state.nominees.filter((id: string) => id !== "");
     if (noms.length < 3) {
-      out.push("Dawn Accord nominees are not fully posted (" + noms.length + " of 3). How nominees are chosen is OPEN — set them by hand.");
+      out.push("Dawn Accord ballot has " + noms.length + " names. It is built from the nominations: the top 3, everyone who ties for the last seat, and No execution only when fewer than 3 living players were nominated.");
     }
     if (noms.length > 0) {
       const missing = livingPlayers(state.players).filter((p: Player) => !p.voteSilenced && !state.votes[p.id]);
@@ -4857,7 +4968,7 @@ function buildReminders(state: GameState): string[] {
         out.push("Votes not yet in: " + missing.map((p: Player) => p.name).join(", ") + ".");
       }
       if (!state.hadExecution) {
-        out.push("No execution has been entered yet this Dawn Accord. Resolve ties by hand (OPEN rule).");
+        out.push("No execution has been entered yet this Dawn Accord. Resolving applies the votes: a unique leader is executed, and a tie or a lead for No execution means nobody is executed.");
       }
     }
   }
