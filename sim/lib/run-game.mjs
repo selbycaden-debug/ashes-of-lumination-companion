@@ -454,7 +454,8 @@ export function runGame(script = {}) {
       events.push("Random deal of " + state.players.length + " players.");
       // Caden ruling 2026-11-16: exactly 1 Ash Touched per game, placed by the GM. The harness plays the GM and places one at random.
       if (script.placeAshTouched !== false) {
-        const at = pick(state.players);
+        let at = pick(state.players);
+        if (at && at.team === "Ashen") at = state.players.find((p) => p.team !== "Ashen");
         if (at) state = setAshTouched(state, at.id);
       }
       // Caden ruling 2026-11-18: Soulbound is in every game with 10+ players. The harness plays the GM and places a random pair.

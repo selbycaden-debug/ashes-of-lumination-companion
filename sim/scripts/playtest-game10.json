@@ -2,7 +2,7 @@
  "name": "playtest-game10",
  "seed": 152,
  "rechargeAt": 8,
- "note": "Replay of /workspace/aol-playtest/game10.md (18p, Ahsoka seed 2026111610). Seating order (P7 Bearer between P12 and P6). P13 Last Witness Ash Touched (Game 10 variant 1: Warden excluded from the AT pool; the app has no AT pool, so this is just a forced AT). rechargeAt 8. AF1: Eye submitted just before the Warden so the Eye's random Mire Touched on P3 shows in P17's result, matching the Game 10 GM ruling; later nights the Eye is last. Syndic accept/decline answers are scripted as soon as the table logged them (harness has no mid-vote hook; membership does not affect tallies). Variants 2 and 3 never triggered and are not in the app. Nov 21 audit: design defaults on; seed re-chosen (152) so the app's Eye miss picks match the table for AF1 (P3) and AF2 (P1). Under D43 the AF3\u2013AF6 misses (table: P14, P18, P8, P12) poison nobody, because the Ash Touched player is dead; intended rules change, same result.",
+ "note": "Replay of /workspace/aol-playtest/game10.md (18p, Ahsoka seed 2026111610). Seating order (P7 Bearer between P12 and P6). P13 Last Witness Ash Touched (Game 10 variant 1: Warden excluded from the AT pool; the app has no AT pool, so this is just a forced AT). rechargeAt 8. AF1: the Eye miss used to poison P3, but P3 is The Echo Thief and Ashen are immune to Mire Touched, so the Warden sees neither. Later nights the Eye is last. Syndic accept/decline answers are scripted as soon as the table logged them (harness has no mid-vote hook; membership does not affect tallies). Variants 2 and 3 never triggered and are not in the app. Nov 21 audit: design defaults on; seed re-chosen (152) so the app's Eye miss picks match the table for AF1 (P3) and AF2 (P1). Under D43 the AF3\u2013AF6 misses (table: P14, P18, P8, P12) poison nobody, because the Ash Touched player is dead; intended rules change, same result.",
  "players": [
   {
    "name": "P15",
@@ -702,7 +702,7 @@
     "P5": "P13 appears Lumen",
     "P10": "P10 and P16 are not on the same team",
     "P16": "P8 is not The Ashen Tyrant",
-    "P17": "P3's condition for the following day: Mire Touched",
+    "P17": "P3's condition for the following day: neither.",
     "P6": "P4 is not the Ash Touched player"
    }
   },

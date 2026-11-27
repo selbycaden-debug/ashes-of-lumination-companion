@@ -1,7 +1,7 @@
 {
  "name": "rule1117-02c-at-gm-override",
  "seed": 1117,
- "note": "Caden ruling 2026-11-17 with the default 50% chance, but the GM forces each round-1 result (Elder true, Warden false, Parallax true, Eye false, Blade check false, Mind true, Self Known false) and the round-2 Witness true. The Bearer's setup result uses the 50% chance (it is rolled at the deal).",
+ "note": "Caden ruling 2026-11-17 with the default 50% chance, but the GM forces each round-1 result (Elder true, Warden false, Parallax true, Eye false, Blade check false, Self Known false) and the round-2 Witness true. The Bearer's setup result uses the 50% chance (it is rolled at the deal). The Ashen Mind is not Ash Touched: Ashen are immune.",
  "players": [
   {
    "name": "Ann",
@@ -22,8 +22,7 @@
   },
   {
    "name": "Mnd",
-   "role": "the-ashen-mind",
-   "ashTouched": true
+   "role": "the-ashen-mind"
   },
   {
    "name": "Bly",
@@ -180,12 +179,6 @@
      "name": "Bly",
      "lie": true,
      "how": "GM override"
-    },
-    {
-     "name": "Mnd",
-     "label": "Ashen Mind snapshot",
-     "lie": false,
-     "how": "GM override"
     }
    ]
   },
@@ -255,13 +248,6 @@
     1
    ],
    "value": "false"
-  },
-  {
-   "player": "Mnd",
-   "rounds": [
-    1
-   ],
-   "value": "true"
   },
   {
    "player": "Slf",
