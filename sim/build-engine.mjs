@@ -40,6 +40,7 @@ const EXPORTS = [
   "enterParadoxFlip",
   "answerSelfKnownQuestion",
   "checkWins",
+  "applyDeath",
   "livingPlayers",
   "playerById",
   "roleOf",

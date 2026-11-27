@@ -109,6 +109,10 @@ type GameState = {
   nominees: string[];
   votes: Record<string, string>;
   winner: Winner;
+  holdWin?: boolean;
+  gmEnded?: boolean;
+  suggestedWinner?: Winner | "";
+  suggestedReason?: string;
   nightOfPeace: boolean;
   tyrantHasDied: boolean;
   successorId: string;
@@ -584,9 +588,9 @@ const ROLES: RoleDef[] = [
     id: "the-ashen-mind",
     name: "The Ashen Mind",
     team: "Ashen",
-    short: "At the start of each round, sees living roles; masked roles appear as a false Lumen role.",
+    short: "Sees every player's role. A masked role appears as one unclaimed role, stable for the whole game.",
     ability:
-      "Start of each round. Sees the role of every living player, except masked roles, which show as a believable false Lumen role with no masked label. The list is a snapshot and does not update mid-round. False roles can change between rounds. If the Mind is Mire Touched, it can receive false information beyond the masks; if Ash Touched, its snapshot may be true or false (Caden, Nov 17).",
+      "Sees every player and their role. A masked role appears as one role that is not in this game, chosen once and kept for the whole game. Every other player is shown as their true role. The list stays after the Mind dies.",
     ash: "none",
     day: "none",
     masked: false,
@@ -1444,6 +1448,9 @@ function syndicWin(state: GameState, alive: Player[], syndic: Player | undefined
   // Caden (Nov 17 card answer, 8:25 PM MT): "Recruits win with the Syndic". Living recruits share the win; dead recruits do not.
   // Caden (Nov 18): the Syndic's goal is to recruit only Lumen; an Ashen who joins never shares a Syndic win.
   if (syndic && alive.every((p: Player) => p.syndicateMember || p.team === "Ashen")) {
+    const text =
+      "Syndic victory: every living player is The Syndic, one of its recruits, or Ashen (Caden). The Syndic and its living recruits win; dead recruits and any Ashen recruit do not (Caden, Nov 17 card: \"Recruits win with the Syndic\"; Nov 18: \"Only him and his recruits win everyone else lose\"). " + (d6 ? ddTag("D6") + ": Syndic is checked before every Lumen, Ashen and Shadow Blade win." : "D6 off: checked after the Lumen takeover, cutoff and succession wins.");
+    if (state.holdWin && !state.gmEnded) return declareWinner(state, "syndic", text);
     let won: GameState = state;
     for (const p of state.players) {
       won = addResult(
@@ -1460,12 +1467,19 @@ function syndicWin(state: GameState, alive: Player[], syndic: Player | undefined
               : "The Syndic and its living recruits have won. You did not win.",
       );
     }
-    return addLog(
-      { ...won, winner: "syndic" },
-      "Syndic victory: every living player is The Syndic, one of its recruits, or Ashen (Caden). The Syndic and its living recruits win; dead recruits and any Ashen recruit do not (Caden, Nov 17 card: \"Recruits win with the Syndic\"; Nov 18: \"Only him and his recruits win everyone else lose\"). " + (d6 ? ddTag("D6") + ": Syndic is checked before every Lumen, Ashen and Shadow Blade win." : "D6 off: checked after the Lumen takeover, cutoff and succession wins."),
-    );
+    return addLog({ ...won, winner: "syndic" }, text);
   }
   return null;
+}
+
+function declareWinner(state: GameState, winner: Winner, text: string): GameState {
+  if (state.holdWin && !state.gmEnded) {
+    return addLog(
+      { ...state, suggestedWinner: winner, suggestedReason: text },
+      "Win condition met (" + winnerLabel(winner) + "). The game stays open until the GM ends it.",
+    );
+  }
+  return addLog({ ...state, winner: winner }, text);
 }
 
 function checkWins(state: GameState, civicNow: boolean): GameState {
@@ -1486,21 +1500,23 @@ function checkWins(state: GameState, civicNow: boolean): GameState {
     if (sw) return sw;
   }
   if (state.shadowTakeover && !blade) {
-    return addLog({ ...state, winner: "lumen" }, "Lumen victory: the active Shadow Blade has been eliminated.");
+    return declareWinner(state, "lumen", "Lumen victory: the active Shadow Blade has been eliminated.");
   }
   if (cutoffApplies(state)) {
     const holder = cutoffKillHolder(state);
     const ci = cutoffInfo(state);
     if (holder && ci.reached) {
-      return addLog(
-        { ...state, winner: "lumen" },
+      return declareWinner(
+        state,
+        "lumen",
         "Lumen victory — Succession cutoff (test rule): The Ashen Tyrant is dead and living Lumen (" + ci.living + ") are at or below 75% of the starting Lumen (" + ci.threshold + " of " + ci.start + "), so the kill does not pass to " + holder.name + " and the Lumen win right away (Caden, Nov 18 card).",
       );
     }
   }
   if (state.tyrantHasDied && state.successionOver && !state.shadowTakeover) {
-    return addLog(
-      { ...state, winner: "lumen" },
+    return declareWinner(
+      state,
+      "lumen",
       "Lumen victory: the Tyrant kill can't pass to anyone, so the game is over and the Lumen win (Caden, Nov 18: \"If these ashen are not alive then the game ends\"; card: \"The Lumen win\").",
     );
   }
@@ -1509,6 +1525,8 @@ function checkWins(state: GameState, civicNow: boolean): GameState {
     if (sw) return sw;
   }
   if (blade && alive.length === 1 && blade.id === alive[0]?.id) {
+    const shadowText = "Shadow Blade victory: it is the last one standing and wins completely alone (Caden: \"the point is for him to win alone\"). Former Ashen do not share the win (Caden, Nov 17 card).";
+    if (state.holdWin && !state.gmEnded) return declareWinner(state, "shadow", shadowText);
     let won: GameState = state;
     for (const p of state.players) {
       won = addResult(
@@ -1519,34 +1537,26 @@ function checkWins(state: GameState, civicNow: boolean): GameState {
           : "The Shadow Blade has won completely alone. You did not win" + (p.team === "Ashen" ? ": former Ashen do not share its win." : "."),
       );
     }
-    return addLog(
-      { ...won, winner: "shadow" },
-      "Shadow Blade victory: it is the last one standing and wins completely alone (Caden: \"the point is for him to win alone\"). Former Ashen do not share the win (Caden, Nov 17 card).",
-    );
+    return addLog({ ...won, winner: "shadow" }, shadowText);
   }
   if (civicNow && civic && (dd(state, "D2") ? alive.length <= 4 : alive.length === 4)) {
-    return addLog(
-      { ...state, winner: "lumen" },
+    return declareWinner(
+      state,
+      "lumen",
       "Lumen victory: The Civic Luminary is alive and " + alive.length + " players remain after the Dawn Accord vote. " + (dd(state, "D2") ? ddTag("D2") + ": 4 or fewer, after any Dawn Accord vote, execution or not; checked before Ashen parity (D6)." : "D2 off: exactly 4."),
     );
   }
   if (!state.shadowTakeover) {
     const bladeAlive = Boolean(blade);
     if (ashen.length === 0 && !bladeAlive) {
-      return addLog(
-        { ...state, winner: "lumen" },
-        WIN_LUMEN_ELIMINATED + (state.tyrantHasDied ? ", so no one is left to take the Tyrant kill (Caden, Nov 18)." : "."),
-      );
+      return declareWinner(state, "lumen", WIN_LUMEN_ELIMINATED + (state.tyrantHasDied ? ", so no one is left to take the Tyrant kill (Caden, Nov 18)." : "."));
     }
     if (lumen.length === 0) {
-      return addLog({ ...state, winner: "ashen" }, WIN_ASHEN_ALL_LUMEN);
+      return declareWinner(state, "ashen", WIN_ASHEN_ALL_LUMEN);
     }
     const rest = alive.length - ashen.length;
     if (ashen.length > 0 && ashen.length >= rest) {
-      return addLog(
-        { ...state, winner: "ashen" },
-        WIN_ASHEN_PARITY,
-      );
+      return declareWinner(state, "ashen", WIN_ASHEN_PARITY);
     }
   }
   return state;
@@ -2445,11 +2455,10 @@ function executePlayer(state: GameState, id: string, voterIdsForParadox: string[
         next,
         "The Ashen Child was executed after a Shadow Blade takeover. D5 off: no Ashen win after a takeover.",
       );
-    } else if (next.shadowTakeover && next.winner === "") {
-      next = addLog({ ...next, winner: "ashen" }, "Ashen victory: The Ashen Child was executed at The Dawn Accord. The trigger still applies after a Shadow Blade takeover (" + ddTag("D5") + ").");
-    } else if (next.winner === "") {
-      next = addLog({ ...next, winner: "ashen" }, "Ashen victory: The Ashen Child was executed at The Dawn Accord.");
-      next = { ...next, winner: "ashen" };
+    } else if (next.shadowTakeover && next.winner === "" && !next.suggestedWinner) {
+      next = declareWinner(next, "ashen", "Ashen victory: The Ashen Child was executed at The Dawn Accord. The trigger still applies after a Shadow Blade takeover (" + ddTag("D5") + ").");
+    } else if (next.winner === "" && !next.suggestedWinner) {
+      next = declareWinner(next, "ashen", "Ashen victory: The Ashen Child was executed at The Dawn Accord.");
     }
   }
   return checkWins(next, true);
