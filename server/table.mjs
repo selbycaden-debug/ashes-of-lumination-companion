@@ -126,6 +126,7 @@ export function reduce(state, action) {
     case "ash-touched": {
       if (!state.dealt) throw new Error("Deal first.");
       const person = state.players.find((p) => p.id === action.playerId);
+      if (person?.team === "Ashen") return pushPlain(state, person.name + " was not marked Ash Touched. Ashen are immune.");
       return pushPlain(setAshTouched(state, action.playerId || ""), person ? "GM marked " + person.name + " Ash Touched." : "GM cleared Ash Touched.");
     }
     case "undo-ash": {
@@ -141,6 +142,7 @@ export function reduce(state, action) {
       if (!state.dealt) throw new Error("Deal first.");
       const person = state.players.find((p) => p.id === action.playerId);
       if (!person) throw new Error("Unknown player.");
+      if (person.team === "Ashen") return pushPlain(state, person.name + " was not marked Mire Touched. Ashen are immune.");
       return pushPlain({
         ...state,
         players: state.players.map((p) => (p.id === person.id ? { ...p, gmMire: true } : p)),

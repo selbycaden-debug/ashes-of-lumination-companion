@@ -1,7 +1,7 @@
 {
  "name": "rule1117-02b-at-chance-100",
  "seed": 1117,
- "note": "Caden ruling 2026-11-17: with the chance at 100%, every Ash Touched result is false. The Eye checks the real Ash Touched Brr and is told it missed, so it keeps hunting.",
+ "note": "Caden ruling 2026-11-17: with the chance at 100%, every Ash Touched result is false. The Eye checks the real Ash Touched Brr and is told it missed, so it keeps hunting. The Ashen Mind is not Ash Touched: Ashen are immune.",
  "players": [
   {
    "name": "Ann",
@@ -22,8 +22,7 @@
   },
   {
    "name": "Mnd",
-   "role": "the-ashen-mind",
-   "ashTouched": true
+   "role": "the-ashen-mind"
   },
   {
    "name": "Bly",
@@ -189,11 +188,6 @@
      "label": "Shadow Blade Tyrant check",
      "lie": true,
      "how": "100% chance"
-    },
-    {
-     "name": "Mnd",
-     "label": "Ashen Mind snapshot",
-     "lie": true
     }
    ]
   },

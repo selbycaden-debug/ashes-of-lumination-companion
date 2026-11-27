@@ -1,7 +1,7 @@
 {
  "name": "rule1117-02a-at-chance-0",
  "seed": 1117,
- "note": "Caden ruling 2026-11-17 (\"Any information may be true or false to an ash touched player\"): with the GM chance of a false result at 0%, every Ash Touched result is true (Bearer, Mind, Elder, Warden, Parallax, Eye, Blade check, Self Known, Witness team).",
+ "note": "Caden ruling 2026-11-17 (\"Any information may be true or false to an ash touched player\"): with the GM chance of a false result at 0%, every Ash Touched result is true (Bearer, Elder, Warden, Parallax, Eye, Blade check, Self Known, Witness team). The Ashen Mind is not Ash Touched: Ashen are immune.",
  "players": [
   {
    "name": "Ann",
@@ -22,8 +22,7 @@
   },
   {
    "name": "Mnd",
-   "role": "the-ashen-mind",
-   "ashTouched": true
+   "role": "the-ashen-mind"
   },
   {
    "name": "Bly",
@@ -194,11 +193,6 @@
      "label": "Shadow Blade Tyrant check",
      "lie": false,
      "how": "0% chance"
-    },
-    {
-     "name": "Mnd",
-     "label": "Ashen Mind snapshot",
-     "lie": false
     }
    ]
   },

@@ -1961,7 +1961,10 @@ function resolveAshFall(state: GameState): GameState {
     }
     const t = playerById(next.players, tid);
     if (!t || !t.alive) continue;
-    if (t.team === "Ashen") continue;
+    if (t.team === "Ashen") {
+      next = addLog(next, "Poison on " + t.name + " did not land: Ashen are immune to Mire Touched.");
+      continue;
+    }
     if (immunityBlocks(t, "poison")) {
       next = addLog(
         next,
@@ -2077,6 +2080,7 @@ function resolveAshFall(state: GameState): GameState {
         // Design default D14 (Nov 21 audit): The Lumen Guard is immune to all poison. D45: the pool is living players other
         // than the Eye (off: the Eye can poison itself); it can land on the checked player.
         const pool = livingPlayers(next.players).filter((p: Player) => {
+          if (p.team === "Ashen") return false;
           if (immunityBlocks(p, "poison")) return false;
           if (dd(next, "D45") && p.id === actor.id) return false;
           return true;
@@ -2430,6 +2434,10 @@ function executePlayer(state: GameState, id: string, voterIdsForParadox: string[
     for (const vid of voterIdsForParadox) {
       const v = playerById(next.players, vid);
       if (!v || !v.alive) continue;
+      if (v.team === "Ashen") {
+        next = addLog(next, v.name + " voted for The Luminary Paradox but is not poisoned: Ashen are immune to Mire Touched.");
+        continue;
+      }
       if (immunityBlocks(v, "poison")) {
         next = addLog(next, v.name + " voted for The Luminary Paradox but is not poisoned: The Lumen Guard is immune to all poison (Design default D14, Nov 21 audit).");
         continue;
@@ -2662,7 +2670,7 @@ function applyForcedDeal(
     p.roleId = seat.roleId;
     p.team = role.team;
     p.charges = role.charged ? charges : 0;
-    p.ashTouched = Boolean(seat.ashTouched);
+    p.ashTouched = Boolean(seat.ashTouched) && role.team !== "Ashen";
     if (seat.roleId === "the-syndic") p.syndicateMember = true;
     return p;
   });
@@ -2706,6 +2714,8 @@ function applyForcedDeal(
   };
   next = addLog(next, distributionLabel(names.length, unalignedPick, rechargeAt));
   next = addLog(next, "Roles have been assigned (forced deal). The Ashen Tyrant is in the game.");
+  const refused = clean.filter((seat: { ashTouched?: boolean; roleId: string; name: string }) => seat.ashTouched && roleOf(seat.roleId).team === "Ashen");
+  for (const seat of refused) next = addLog(next, seat.name + " was not marked Ash Touched. Ashen are immune.");
   const atCount = players.filter((pl: Player) => pl.ashTouched).length;
   if (atCount > 1) next = addLog(next, "Warning: " + atCount + " players are marked Ash Touched. Caden: exactly 1 per game. Fix it on the modifier tracker.");
   next = setupStartInfo(next);
@@ -2813,6 +2823,7 @@ function canEchoCopy(roleId: string): boolean {
 // Caden ruling (Nov 16, 2026): exactly 1 Ash Touched per game, placed by the GM. Setting one clears any other.
 function setAshTouched(prev: GameState, playerId: string): GameState {
   const p = playerById(prev.players, playerId);
+  if (p && p.team === "Ashen") return addLog(prev, p.name + " was not marked Ash Touched. Ashen are immune.");
   const next = { ...prev, players: prev.players.map((x: Player) => ({ ...x, ashTouched: x.id === playerId })) };
   return addLog(next, p ? "GM placed Ash Touched on " + p.name + " (GM only; exactly 1 per game)." : "GM cleared Ash Touched.");
 }
@@ -5838,8 +5849,11 @@ function ModifierForm(props: {
       <div style={wrap}>
         <button
           type="button"
+          title={p.team === "Ashen" ? "Ashen are immune" : "Ash Touched"}
+          disabled={p.team === "Ashen"}
           style={btnStyle(p.ashTouched ? "gold" : "quiet")}
           onClick={() => {
+            if (p.team === "Ashen") return;
             // Caden: exactly 1 Ash Touched per game. Turning it on here clears it from everyone else.
             const on = !p.ashTouched;
             for (const q of props.players) {
@@ -5850,7 +5864,7 @@ function ModifierForm(props: {
         >
           Ash Touched{p.ashTouched ? " (on — the 1 per game)" : ""}
         </button>
-        <button type="button" style={btnStyle(p.mireTouched ? "gold" : "quiet")} onClick={() => toggle("mireTouched")}>
+        <button type="button" title={p.team === "Ashen" ? "Ashen are immune" : "Mire Touched"} disabled={p.team === "Ashen"} style={btnStyle(p.mireTouched ? "gold" : "quiet")} onClick={() => { if (p.team !== "Ashen") toggle("mireTouched"); }}>
           Mire Touched{p.mireTouched ? " (on)" : ""}
         </button>
         <button type="button" style={btnStyle(p.shielded ? "gold" : "quiet")} onClick={() => toggle("shielded")}>

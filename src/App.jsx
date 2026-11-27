@@ -1,24 +1,52 @@
 import { useEffect, useMemo, useState } from "react";
 
 const TOKEN_KEY = "aol-seat-token";
+const ASSET_VERSION = "3";
 
-function Portrait({ roleId, name, size = 112 }) {
+function symbolFile(team) {
+  if (team === "Ashen" || team === "ashen") return "symbol-ashen-128";
+  if (team === "Unaligned" || team === "unaligned") return "symbol-unaligned-128";
+  return "symbol-lumen-128";
+}
+
+function symbolSrc(team) {
+  return `/symbols/${symbolFile(team)}.webp?v=${ASSET_VERSION}`;
+}
+
+function Portrait({ roleId, name, size = 112, dead = false }) {
   if (!roleId) return null;
+  const src = dead
+    ? `/portraits-remnant/${roleId}-remnant.webp?v=${ASSET_VERSION}`
+    : `/portraits/${roleId}.webp?v=${ASSET_VERSION}`;
+  const height = size === 112 ? Math.round(size * 1.25) : Math.round(size * 4 / 3);
   return (
     <img
-      src={`/portraits/${roleId}.webp`}
+      src={src}
       alt=""
       width={size}
-      height={size}
+      height={height}
+      data-testid={dead ? "remnant-portrait" : "portrait"}
+      data-role={roleId}
       className="object-cover"
-      style={{ width: size, height: size === 112 ? Math.round(size * 1.25) : size }}
+      style={{ width: size, height }}
     />
   );
 }
 
 function Symbol({ team, size = 22 }) {
-  const file = team === "Ashen" || team === "ashen" ? "symbol-ashen-128" : team === "Unaligned" || team === "unaligned" ? "symbol-unaligned-128" : "symbol-lumen-128";
-  return <img src={`/symbols/${file}.webp`} alt="" width={size} height={size} style={{ width: size, height: size }} />;
+  return <img src={symbolSrc(team)} alt="" data-testid={`symbol-${symbolFile(team)}`} width={size} height={size} style={{ width: size, height: size }} />;
+}
+
+function FrameCorners({ team }) {
+  const spots = [
+    { top: 4, left: 4 },
+    { top: 4, right: 4 },
+    { bottom: 4, left: 4 },
+    { bottom: 4, right: 4 },
+  ];
+  return spots.map((spot) => (
+    <img key={`${spot.top ?? "b"}-${spot.left ?? "r"}`} src={symbolSrc(team)} alt="" data-testid="frame-symbol" className="pointer-events-none absolute h-5 w-5" width={20} height={20} style={spot} />
+  ));
 }
 
 function Crest({ roleId, alignment, size = 76 }) {
@@ -417,19 +445,19 @@ function GmTable({ state, act }) {
       {state.players.map((player) => (
         <article key={player.id} className="panel p-4" data-testid="player-row">
           <div className="flex items-center gap-3">
-            <Portrait roleId={player.roleId} name={player.roleName} size={72} />
+            <Portrait roleId={player.roleId} name={player.roleName} size={72} dead={!player.alive} />
             <div>
               <h3 className="text-lg font-semibold">{player.name} {!player.alive && <span className="text-[#e15b4c]">· dead</span>}</h3>
-              <p className="text-[#e6c27a]">{player.roleName || "Undealt"} · {player.alignment}</p>
+              <p className="flex items-center text-[#e6c27a]"><Symbol team={player.alignment} /> {player.roleName || "Undealt"} · {player.alignment}</p>
             </div>
           </div>
           <div className="mt-2 flex flex-wrap gap-1 text-xs">
             {chips(player).map((chip) => <span key={chip} className="rounded-full border border-[#8a7038] px-2 py-1">{chip}</span>)}
-            <button type="button" className="rounded-full border border-[#c9a85a] px-2 py-1" onClick={() => act({ type: "ash-touched", playerId: player.id })}>Set Ash Touched</button>
+            <button type="button" data-testid="set-ash" className="rounded-full border border-[#c9a85a] px-2 py-1 disabled:opacity-40" disabled={player.alignment === "Ashen"} title={player.alignment === "Ashen" ? "Ashen are immune" : "Set Ash Touched"} onClick={() => act({ type: "ash-touched", playerId: player.id })}>Set Ash Touched</button>
             <button type="button" data-testid="undo-ash" className="rounded-full border border-[#c9a85a] px-2 py-1" onClick={() => act({ type: "undo-ash", playerId: player.id })}>Undo Ash Touched</button>
             <button type="button" data-testid="gm-kill" className="rounded-full border border-[#e15b4c] px-2 py-1" onClick={() => act({ type: "gm-kill", playerId: player.id })}>Kill player</button>
             <button type="button" data-testid="undo-kill" className="rounded-full border border-[#e15b4c] px-2 py-1" onClick={() => act({ type: "undo-kill", playerId: player.id })}>Undo kill</button>
-            <button type="button" data-testid="gm-mire" className="rounded-full border border-[#c9a85a] px-2 py-1" onClick={() => act({ type: "gm-mire", playerId: player.id })}>Set Mire Touched</button>
+            <button type="button" data-testid="gm-mire" className="rounded-full border border-[#c9a85a] px-2 py-1 disabled:opacity-40" disabled={player.alignment === "Ashen"} title={player.alignment === "Ashen" ? "Ashen are immune" : "Set Mire Touched"} onClick={() => act({ type: "gm-mire", playerId: player.id })}>Set Mire Touched</button>
             <button type="button" data-testid="undo-mire" className="rounded-full border border-[#c9a85a] px-2 py-1" onClick={() => act({ type: "undo-mire", playerId: player.id })}>Undo Mire Touched</button>
           </div>
           <label className="mt-3 grid gap-1 text-xs text-[#d9c7b6]">
@@ -591,7 +619,15 @@ function Voting({ state, act }) {
     <section className="panel grid gap-3 p-4" data-testid="voting-tab">
       <h2 className="serif text-2xl">Nominations</h2>
       {(state.nominations || []).length === 0 && <p className="text-sm text-[#d9c7b6]">No nominations yet.</p>}
-      {(state.nominations || []).map((row, index) => <p key={index} className="text-sm">{row.byName} nominated {row.targetName}.</p>)}
+      {(state.nominations || []).map((row, index) => {
+        const person = state.players.find((p) => p.name === row.targetName);
+        return (
+          <p key={index} className="flex items-center gap-2 text-sm">
+            {person?.roleId && <Portrait roleId={person.roleId} name={person.roleName} size={40} dead={!person.alive} />}
+            {row.byName} nominated {row.targetName}.
+          </p>
+        );
+      })}
       <h2 className="serif text-2xl">Votes</h2>
       {(state.votes || []).length === 0 && <p className="text-sm text-[#d9c7b6]">No votes yet.</p>}
       {(state.votes || []).map((row) => <p key={row.name} className="text-sm">{row.name} voted {row.choice}.</p>)}
@@ -697,12 +733,12 @@ function RoleHome({ state }) {
       <article className="panel p-4">
         {you.roleId ? (
           <div>
-            <div className="relative">
-              <img src={`/symbols/${you.alignment === "Ashen" ? "symbol-ashen" : you.alignment === "Unaligned" ? "symbol-unaligned" : "symbol-lumen"}-128.webp`} alt="" className="absolute right-2 top-2 h-6 w-6" />
-              <Portrait roleId={you.roleId} name={you.roleName} size={280} />
+            <div className="relative inline-block" data-testid="role-frame">
+              <FrameCorners team={you.alignment} />
+              <Portrait roleId={you.roleId} name={you.roleName} size={220} dead={!you.alive} />
             </div>
             <h2 className="serif mt-3 text-3xl uppercase" data-testid="role-name">{you.roleName}</h2>
-            <p className="label text-xs text-[#c9a85a]"><Symbol team={you.alignment} /> {you.alignment}</p>
+            <p className="label flex items-center text-xs text-[#c9a85a]" data-testid="role-chip"><Symbol team={you.alignment} /> {you.alignment}</p>
             {you.roleId === "the-ashen-child" && <p className="mt-2 bg-[#9e1b1b] px-2 py-1 text-xs uppercase tracking-widest">Do not let them execute you.</p>}
             {you.roleId === "the-shadow-blade" && <p className="mt-2 italic text-[#9c8dae]">Earn trust first, strike later.</p>}
             {you.roleId === "voice-of-the-accord" && <p className="label mt-2 text-xs text-[#e8cf8a]">Your vote counts as 2.</p>}
@@ -715,7 +751,7 @@ function RoleHome({ state }) {
         ) : <h2 className="serif text-3xl">Waiting for the deal</h2>}
         {you.ability && <p className="mt-3 text-[#f3eedf]">{you.ability}</p>}
         {you.teammates && (
-          <p className="mt-3 text-sm" data-testid="teammates">Ashen teammates: {you.teammates.length ? you.teammates.join(", ") : "you are the only one"}.</p>
+          <p className="mt-3 flex items-center text-sm" data-testid="teammates"><Symbol team="Ashen" /> Ashen teammates: {you.teammates.length ? you.teammates.join(", ") : "you are the only one"}.</p>
         )}
       </article>
       <section className="panel p-4" data-testid="seat-list">
@@ -755,7 +791,7 @@ function Catalogue({ roles, onClose }) {
     roles: roles.filter((role) => role.team === team),
   })), [roles]);
   return (
-    <div className="fixed inset-0 z-10 overflow-auto bg-[#140e0c]/95 p-4" data-testid="catalogue">
+    <div className="fixed inset-0 z-10 overflow-auto bg-[#140e0c] p-4" data-testid="catalogue">
       <div className="mx-auto max-w-3xl">
         <div className="flex items-center justify-between">
           <h2 className="serif text-3xl">Every role</h2>
@@ -764,7 +800,7 @@ function Catalogue({ roles, onClose }) {
         <p className="mt-2 text-sm text-[#a89a86]">The full catalogue of all 26 roles, the same in every game. It does not say which roles were dealt.</p>
         {groups.map((group) => (
           <section key={group.team} className="mt-4">
-            <h3 className="label text-xs text-[#c9a85a]"><Symbol team={group.team} /> {group.team}</h3>
+            <h3 className="label flex items-center text-xs text-[#c9a85a]" data-testid={`catalogue-${group.team}`}><Symbol team={group.team} /> {group.team}</h3>
             {group.roles.map((role) => <RoleCard key={role.id} role={role} />)}
           </section>
         ))}
@@ -782,7 +818,7 @@ function RoleCard({ role }) {
       <div>
         <h4 className="serif text-xl uppercase">{role.name}</h4>
         <p className="text-sm text-[#a89a86]">{role.short}</p>
-        <p className="text-xs uppercase tracking-wider text-[#b5a394]">{role.team}</p>
+        <p className="flex items-center text-xs uppercase tracking-wider text-[#b5a394]"><Symbol team={role.team} size={16} /> {role.team}</p>
         <button type="button" data-testid={`more-info-${role.id}`} className="mt-2 text-sm underline" onClick={() => setOpen((value) => !value)}>More info</button>
         {open && <p className="mt-2 text-sm" data-testid={`role-detail-${role.id}`}>{role.ability}</p>}
         {open && thin && <p className="mt-2 text-xs text-[#e6c27a]" data-testid="thin-role">The rule text for this role is short.</p>}

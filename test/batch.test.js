@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { start } from "../server/index.js";
 import { reduce, viewFor } from "../server/table.mjs";
-import { ROLES, applyForcedDeal, blankState, startRound } from "../sim/dist/engine.js";
+import { createHash } from "node:crypto";
+import fs from "node:fs";
+import { ROLES, applyForcedDeal, blankState, resolveAshFall, setAshTouched, startRound, submitPlayerAction } from "../sim/dist/engine.js";
 
 async function call(port, path, { token, body } = {}) {
   const res = await fetch(`http://127.0.0.1:${port}${path}`, {
@@ -271,4 +273,46 @@ test("Ashen Mind list, GM kill and mire notes, and no automatic ending", () => {
   const mindEnded = viewFor(state, { kind: "player", playerId: byName("Mina").id, name: "Mina" }, extras);
   assert.equal(linked(mindEnded, "Fern", "the-foresight-elder", "The Foresight Elder"), false);
   assert.equal(linked(mindEnded, "Cora", "the-civic-luminary", "The Civic Luminary"), false);
+});
+
+test("new faction symbols, remnant portraits, and Ashen immunity to Ash and Mire Touched", () => {
+  const hash = (file) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+  assert.equal(hash("public/symbols/symbol-lumen-128.webp"), "bdbca36ec89472ffc5ae6b91bf03ac4d216115aa07f7b4782f0e7a1aefa0d563");
+  assert.equal(hash("public/symbols/symbol-unaligned-128.webp"), "4b7ba99d98e9b3e196c0981734c817af5c74683c6ddc5e5af4cfc88db16dcaae");
+  assert.equal(hash("public/portraits-remnant/the-ashen-child-remnant.webp"), "c227d4a90cf26130b784ce2243e16cbfafe31bb4f2df5ef380f2e789919f613a");
+  const slugs = fs.readdirSync("public/portraits").filter((name) => name.endsWith(".webp")).map((name) => name.replace(/\.webp$/, ""));
+  assert.equal(slugs.length, 26);
+  for (const slug of slugs) assert.equal(fs.existsSync(`public/portraits-remnant/${slug}-remnant.webp`), true, slug);
+
+  let state = applyForcedDeal(blankState(), [
+    { name: "Tor", roleId: "the-ashen-tyrant", ashTouched: true },
+    { name: "Mire", roleId: "the-ashen-mirebane" },
+    { name: "Ann", roleId: "voice-of-the-accord" },
+    { name: "Ben", roleId: "the-lumen-guard" },
+    { name: "Cora", roleId: "the-civic-luminary" },
+  ]);
+  const id = (name) => state.players.find((p) => p.name === name).id;
+  assert.equal(state.players.find((p) => p.name === "Tor").ashTouched, false);
+  assert.match(state.log.map((line) => line.text).join("\n"), /Ashen are immune/);
+  state = setAshTouched(state, id("Tor"));
+  assert.equal(state.players.find((p) => p.name === "Tor").ashTouched, false);
+  state = setAshTouched(state, id("Ann"));
+  assert.equal(state.players.find((p) => p.name === "Ann").ashTouched, true);
+  assert.equal(state.players.find((p) => p.name === "Tor").ashTouched, false);
+  const refused = reduce({ ...state, holdWin: true }, { type: "gm-mire", playerId: id("Tor") });
+  assert.equal(refused.players.find((p) => p.name === "Tor").gmMire, undefined);
+  assert.equal(refused.players.find((p) => p.name === "Tor").mireTouched, false);
+  const noted = reduce(refused, { type: "gm-mire", playerId: id("Ann") });
+  assert.equal(noted.players.find((p) => p.name === "Ann").gmMire, true);
+  const annView = viewFor(noted, { kind: "player", playerId: id("Ann"), name: "Ann" }, { chats: [], statements: [], code: "ART" });
+  assert.equal(JSON.stringify(annView).includes("gmMire"), false);
+
+  state = startRound({ ...state, holdWin: true }, true);
+  const mire = state.players.find((p) => p.name === "Mire");
+  const tor = state.players.find((p) => p.name === "Tor");
+  state = submitPlayerAction(state, mire, "Mirebane poison", [tor.id], false, "", "ashFall", false);
+  state = resolveAshFall(state);
+  assert.equal(state.players.find((p) => p.name === "Tor").mireTouched, false);
+  assert.equal(state.players.find((p) => p.name === "Tor").poisonCount, 0);
+  assert.match(state.log.map((line) => line.text).join("\n"), /Poison on Tor did not land: Ashen are immune to Mire Touched/);
 });
