@@ -145,3 +145,52 @@ test("five phones sit a full night, day, and vote", async ({ browser }) => {
   await players[0].getByRole("button", { name: "Role", exact: true }).click();
   await players[0].screenshot({ path: "screenshots/player-phone.png", fullPage: true });
 });
+
+test("GM kill and mire notes stay private, and the table does not end itself", async ({ browser }) => {
+  const gmContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const gm = await gmContext.newPage();
+  await gm.goto("/");
+  await gm.getByTestId("gm-name").fill("Caden");
+  await gm.getByTestId("create-game").click();
+  const code = (await gm.getByTestId("room-code").innerText()).trim();
+  const players = [];
+  for (const name of NAMES) {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
+    const page = await context.newPage();
+    await page.goto(`/?room=${code}`);
+    await page.getByTestId("join-name").fill(name);
+    await page.getByTestId("join-submit").click();
+    await expect(page.getByText("Waiting for the deal")).toBeVisible();
+    players.push(page);
+  }
+  await gm.getByTestId("deal").click();
+  const tyrant = gm.getByTestId("player-row").filter({ hasText: "The Ashen Tyrant" });
+  const tyrantName = (await tyrant.locator("h3").innerText()).trim();
+  const seat = players[NAMES.indexOf(tyrantName)];
+  await tyrant.getByTestId("gm-kill").click();
+  await expect(tyrant.locator("h3")).toContainText("dead");
+  await expect(gm.getByTestId("win-suggestion")).toContainText("Lumen win condition met");
+  await expect(gm.locator("h1")).toContainText("Roles dealt");
+  await expect(seat.getByTestId("public-log")).toContainText(`Died tonight: ${tyrantName}.`);
+  await expect(seat.getByText("win condition met")).toHaveCount(0);
+  await tyrant.getByTestId("undo-kill").click();
+  await expect(tyrant.locator("h3")).not.toContainText("dead");
+  await expect(gm.getByTestId("win-suggestion")).toHaveCount(0);
+  await expect(seat.getByTestId("public-log")).toHaveCount(0);
+
+  const first = gm.getByTestId("player-row").first();
+  const firstName = (await first.locator("h3").innerText()).trim();
+  await first.getByTestId("gm-mire").click();
+  await expect(first).toContainText("Mire note");
+  await expect(players[NAMES.indexOf(firstName)].getByText("Mire note")).toHaveCount(0);
+  await first.getByTestId("undo-mire").click();
+  await expect(first.getByText("Mire note")).toHaveCount(0);
+
+  await gm.getByTestId("end-game").click();
+  await gm.getByTestId("end-side").selectOption("lumen");
+  await gm.getByTestId("end-confirm").check();
+  await gm.getByTestId("end-submit").click();
+  await expect(gm.locator("h1")).toContainText("Ended");
+  await expect(gm.getByTestId("reveal")).toContainText("The Ashen Tyrant");
+  await expect(seat.getByTestId("reveal")).toBeVisible();
+});

@@ -300,6 +300,12 @@ async function playTable(port, count) {
     const advanced = await gm({ type: "resolve" });
     assert.equal(advanced.status, 200, advanced.data.error || before);
     state = advanced.data.state;
+    if (state.suggestedWinner && !state.winner) {
+      assert.notEqual(state.phase, "ended");
+      const ended = await gm({ type: "end-game", winner: state.suggestedWinner, confirm: true });
+      assert.equal(ended.status, 200, ended.data.error || "");
+      state = ended.data.state;
+    }
     if (state.players.some((p) => !p.alive)) sawDeath = true;
     if (state.phase === "ashFall") rounds += 1;
     if (state.phase === before && !state.winner && !state.block) {
@@ -308,7 +314,7 @@ async function playTable(port, count) {
   }
   assert.ok(phases.includes("ashFall"), "Ash Fall did not open at " + count);
   if (state.winner) {
-    assert.match((state.log || []).map((line) => line.text).join("\n"), /victory|have won/i);
+    assert.match((state.log || []).map((line) => line.text).join("\n"), /victory|have won|GM ended the game/i);
   } else {
     assert.ok(phases.includes("lumination") && phases.includes("dawnAccord"), phases.join(",") || "no phases");
   }

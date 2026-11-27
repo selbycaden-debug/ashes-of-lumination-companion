@@ -1,7 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { start } from "../server/index.js";
-import { ROLES } from "../sim/dist/engine.js";
+import { reduce, viewFor } from "../server/table.mjs";
+import { ROLES, applyForcedDeal, blankState, startRound } from "../sim/dist/engine.js";
 
 async function call(port, path, { token, body } = {}) {
   const res = await fetch(`http://127.0.0.1:${port}${path}`, {
@@ -175,4 +176,99 @@ test("nominations and votes lock during the Dawn Accord, and manual mode does no
   } finally {
     await close();
   }
+});
+
+function linked(node, name, roleId, roleName) {
+  if (!node || typeof node !== "object") return false;
+  if (node.name === name && (node.roleId === roleId || node.roleName === roleName)) return true;
+  return Object.values(node).some((value) => linked(value, name, roleId, roleName));
+}
+
+test("Ashen Mind list, GM kill and mire notes, and no automatic ending", () => {
+  const seats = [
+    { name: "Tess", roleId: "the-ashen-tyrant" },
+    { name: "Mina", roleId: "the-ashen-mind" },
+    { name: "Vera", roleId: "voice-of-the-accord" },
+    { name: "Fern", roleId: "the-foresight-elder" },
+    { name: "Cora", roleId: "the-civic-luminary" },
+  ];
+  let state = applyForcedDeal(blankState(), seats);
+  assert.equal(state.dealt, true);
+  state = startRound({ ...state, holdWin: true }, true);
+  const byName = (name) => state.players.find((p) => p.name === name);
+  const extras = { chats: [], statements: [], code: "MIND" };
+  const mindView = viewFor(state, { kind: "player", playerId: byName("Mina").id, name: "Mina" }, extras);
+  const otherView = viewFor(state, { kind: "player", playerId: byName("Vera").id, name: "Vera" }, extras);
+  const again = viewFor(state, { kind: "player", playerId: byName("Mina").id, name: "Mina" }, extras);
+  assert.deepEqual(again.mindList, mindView.mindList);
+  assert.equal(otherView.mindList, undefined);
+  assert.equal(Object.hasOwn(JSON.parse(JSON.stringify(otherView)), "mindList"), false);
+  const dealt = new Set(state.players.map((p) => p.roleId));
+  const unclaimed = ROLES.map((role) => role.id).filter((id) => !dealt.has(id)).sort();
+  const fern = mindView.mindList.find((row) => row.name === "Fern");
+  const cora = mindView.mindList.find((row) => row.name === "Cora");
+  const vera = mindView.mindList.find((row) => row.name === "Vera");
+  assert.equal(vera.roleId, "voice-of-the-accord");
+  assert.equal(mindView.mindList.find((row) => row.name === "Tess").roleId, "the-ashen-tyrant");
+  assert.equal(mindView.mindList.find((row) => row.name === "Mina").roleId, "the-ashen-mind");
+  assert.equal(cora.roleId, unclaimed[0]);
+  assert.equal(fern.roleId, unclaimed[1]);
+  assert.equal(dealt.has(fern.roleId), false);
+  assert.equal(dealt.has(cora.roleId), false);
+  assert.equal(linked(mindView, "Fern", "the-foresight-elder", "The Foresight Elder"), false);
+  assert.equal(linked(mindView, "Cora", "the-civic-luminary", "The Civic Luminary"), false);
+  assert.equal(mindView.you.inbox.some((item) => item.text.startsWith("Start-of-round snapshot")), false);
+  for (const item of mindView.you.inbox) {
+    assert.equal(item.text.includes("Fern") && item.text.includes("The Foresight Elder"), false);
+    assert.equal(item.text.includes("Cora") && item.text.includes("The Civic Luminary"), false);
+  }
+
+  state = reduce(state, { type: "gm-mire", playerId: byName("Vera").id });
+  const gm = viewFor(state, { kind: "gm", name: "Caden" }, extras);
+  assert.equal(gm.players.find((p) => p.name === "Vera").gmMire, true);
+  assert.ok(gm.intentLog.some((line) => line.includes("GM marked Vera Mire Touched")));
+  const veraView = viewFor(state, { kind: "player", playerId: byName("Vera").id, name: "Vera" }, extras);
+  assert.equal(JSON.stringify(veraView).includes("gmMire"), false);
+  assert.equal(veraView.you.inbox.some((item) => /mire/i.test(item.text)), false);
+  state = reduce(state, { type: "undo-mire", playerId: byName("Vera").id });
+  assert.equal(viewFor(state, { kind: "gm", name: "Caden" }, extras).players.find((p) => p.name === "Vera").gmMire, false);
+
+  state = reduce(state, { type: "ash-touched", playerId: byName("Vera").id });
+  assert.equal(viewFor(state, { kind: "gm", name: "Caden" }, extras).players.find((p) => p.name === "Vera").ashTouched, true);
+  state = reduce(state, { type: "undo-ash", playerId: byName("Vera").id });
+  assert.equal(viewFor(state, { kind: "gm", name: "Caden" }, extras).players.find((p) => p.name === "Vera").ashTouched, false);
+
+  state = reduce(state, { type: "gm-kill", playerId: byName("Vera").id });
+  const afterKill = viewFor(state, { kind: "player", playerId: byName("Mina").id, name: "Mina" }, extras);
+  assert.equal(afterKill.seats.find((seat) => seat.name === "Vera").alive, false);
+  assert.ok(afterKill.publicLog.some((line) => line.text === "Died tonight: Vera."));
+  assert.ok(viewFor(state, { kind: "gm", name: "Caden" }, extras).intentLog.some((line) => line.includes("GM killed Vera")));
+  assert.equal(state.winner || "", "");
+  assert.notEqual(viewFor(state, { kind: "gm", name: "Caden" }, extras).phase, "ended");
+  state = reduce(state, { type: "undo-kill", playerId: byName("Vera").id });
+  const revived = viewFor(state, { kind: "player", playerId: byName("Mina").id, name: "Mina" }, extras);
+  assert.equal(revived.seats.find((seat) => seat.name === "Vera").alive, true);
+  assert.equal(revived.publicLog.some((line) => line.text.includes("Vera")), false);
+
+  const killedMind = reduce(state, { type: "gm-kill", playerId: byName("Mina").id });
+  const deadMind = viewFor(killedMind, { kind: "player", playerId: byName("Mina").id, name: "Mina" }, extras);
+  assert.equal(deadMind.you.alive, false);
+  assert.ok(deadMind.mindList.length === 5);
+  assert.equal(deadMind.mindList.find((row) => row.name === "Fern").roleId, fern.roleId);
+  state = reduce(killedMind, { type: "undo-kill", playerId: byName("Mina").id });
+
+  state = reduce(state, { type: "gm-kill", playerId: byName("Tess").id });
+  const suggested = viewFor(state, { kind: "gm", name: "Caden" }, extras);
+  assert.equal(suggested.winner, null);
+  assert.notEqual(suggested.phase, "ended");
+  assert.equal(suggested.suggestedWinner, "lumen");
+  assert.match(suggested.intentLog.join("\n") + (suggested.log || []).map((line) => line.text).join("\n"), /win condition met/i);
+  assert.throws(() => reduce(state, { type: "end-game", winner: "lumen", confirm: false }), /Confirm/);
+  state = reduce(state, { type: "end-game", winner: "lumen", confirm: true });
+  const ended = viewFor(state, { kind: "gm", name: "Caden" }, extras);
+  assert.equal(ended.phase, "ended");
+  assert.equal(ended.winner, "lumen");
+  const mindEnded = viewFor(state, { kind: "player", playerId: byName("Mina").id, name: "Mina" }, extras);
+  assert.equal(linked(mindEnded, "Fern", "the-foresight-elder", "The Foresight Elder"), false);
+  assert.equal(linked(mindEnded, "Cora", "the-civic-luminary", "The Civic Luminary"), false);
 });

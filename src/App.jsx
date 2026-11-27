@@ -391,6 +391,10 @@ function PhaseBar({ state, act }) {
       {state.phase === "ashFall" && state.nightProgress && (
         <p className="text-sm" data-testid="night-progress">{state.nightProgress.received} of {state.nightProgress.expected} actions in</p>
       )}
+      {state.suggestedWinner && state.phase !== "ended" && (
+        <p className="text-sm text-[#e6c27a]" data-testid="win-suggestion">{labelSide(state.suggestedWinner)} win condition met. The game stays open until you end it.</p>
+      )}
+      {state.phase !== "ended" && <EndGame state={state} act={act} />}
       {state.phase !== "ended" && state.winner == null && !state.block && !needSoul && !manualDawn && (
         <button data-testid="advance" className="tap rounded-xl bg-[#e6c27a] px-4 font-semibold text-[#1a100e]" onClick={() => act({ type: "resolve" })}>
           {state.phase === "ashFall" && state.nightProgress ? `Resolve night (${state.nightProgress.received} of ${state.nightProgress.expected} in)` : label}
@@ -422,6 +426,11 @@ function GmTable({ state, act }) {
           <div className="mt-2 flex flex-wrap gap-1 text-xs">
             {chips(player).map((chip) => <span key={chip} className="rounded-full border border-[#8a7038] px-2 py-1">{chip}</span>)}
             <button type="button" className="rounded-full border border-[#c9a85a] px-2 py-1" onClick={() => act({ type: "ash-touched", playerId: player.id })}>Set Ash Touched</button>
+            <button type="button" data-testid="undo-ash" className="rounded-full border border-[#c9a85a] px-2 py-1" onClick={() => act({ type: "undo-ash", playerId: player.id })}>Undo Ash Touched</button>
+            <button type="button" data-testid="gm-kill" className="rounded-full border border-[#e15b4c] px-2 py-1" onClick={() => act({ type: "gm-kill", playerId: player.id })}>Kill player</button>
+            <button type="button" data-testid="undo-kill" className="rounded-full border border-[#e15b4c] px-2 py-1" onClick={() => act({ type: "undo-kill", playerId: player.id })}>Undo kill</button>
+            <button type="button" data-testid="gm-mire" className="rounded-full border border-[#c9a85a] px-2 py-1" onClick={() => act({ type: "gm-mire", playerId: player.id })}>Set Mire Touched</button>
+            <button type="button" data-testid="undo-mire" className="rounded-full border border-[#c9a85a] px-2 py-1" onClick={() => act({ type: "undo-mire", playerId: player.id })}>Undo Mire Touched</button>
           </div>
           <label className="mt-3 grid gap-1 text-xs text-[#d9c7b6]">
             GM note
@@ -429,12 +438,6 @@ function GmTable({ state, act }) {
           </label>
         </article>
       ))}
-      {state.mindSnap && (
-        <section className="panel p-4">
-          <h3 className="serif text-xl">Ashen Mind list</h3>
-          <MindEditor state={state} act={act} />
-        </section>
-      )}
       {state.phase === "ended" && <Reveal reveal={state.reveal} />}
     </div>
   );
@@ -444,6 +447,7 @@ function chips(player) {
   return [
     player.ashTouched && "Ash Touched",
     player.poisoned && `Mire Touched ${player.poisonCount}`,
+    player.gmMire && "Mire note",
     player.poisonCount > 0 && !player.poisoned && `Poison count ${player.poisonCount}`,
     player.shield && "Shielded",
     player.voided && "Voided",
@@ -455,23 +459,6 @@ function chips(player) {
     player.echoCopy && `Copying ${player.echoCopy}`,
     player.recruitShield && "Recruit shield ready",
   ].filter(Boolean);
-}
-
-function MindEditor({ state, act }) {
-  const [shown, setShown] = useState(() => Object.fromEntries(state.mindSnap.map((row) => [row.playerId, row.shownRoleId])));
-  return (
-    <div className="mt-2 grid gap-2">
-      {state.mindSnap.map((row) => (
-        <label key={row.playerId} className="grid gap-1 text-sm">
-          {row.name} · real {state.catalogue.find((r) => r.id === row.realRoleId)?.name}{row.masked ? " (masked)" : ""}
-          <select className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={shown[row.playerId]} onChange={(e) => setShown({ ...shown, [row.playerId]: e.target.value })}>
-            {state.catalogue.filter((r) => r.alignment === "lumen").map((role) => <option key={role.id} value={role.id}>{role.name}</option>)}
-          </select>
-        </label>
-      ))}
-      <button className="tap rounded-xl border border-[#e6c27a] text-[#e6c27a]" onClick={() => act({ type: "mind-override", shown })}>Send this list to the Mind</button>
-    </div>
-  );
 }
 
 function GmChat({ state, act }) {
@@ -508,6 +495,39 @@ function LogList({ lines }) {
       {lines.length === 0 && <li>The log is empty.</li>}
       {lines.map((line) => <li key={line.id} className={line.secret ? "text-[#9aa4c7]" : ""}>{line.secret ? "Private · " : ""}{line.text}</li>)}
     </ol>
+  );
+}
+
+function labelSide(side) {
+  if (side === "lumen") return "Lumen";
+  if (side === "ashen") return "Ashen";
+  if (side === "syndic") return "Syndic";
+  if (side === "shadow") return "Shadow Blade";
+  return side;
+}
+
+function EndGame({ state, act }) {
+  const [open, setOpen] = useState(false);
+  const [side, setSide] = useState(state.suggestedWinner || "lumen");
+  const [confirm, setConfirm] = useState(false);
+  if (!open) return <button type="button" data-testid="end-game" className="tap rounded-xl border border-[#e15b4c] px-3" onClick={() => setOpen(true)}>End game</button>;
+  return (
+    <div className="grid gap-2">
+      <label className="grid gap-1 text-sm">
+        Result
+        <select data-testid="end-side" className="tap rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" value={side} onChange={(e) => setSide(e.target.value)}>
+          <option value="lumen">Lumen</option>
+          <option value="ashen">Ashen</option>
+          <option value="syndic">Syndic</option>
+          <option value="shadow">Shadow Blade</option>
+        </select>
+      </label>
+      <label className="flex items-center gap-2 text-sm">
+        <input data-testid="end-confirm" type="checkbox" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} />
+        Confirm ending the game
+      </label>
+      <button type="button" data-testid="end-submit" className="tap rounded-xl bg-[#e15b4c] px-3" disabled={!confirm} onClick={() => act({ type: "end-game", winner: side, confirm: true })}>End the game</button>
+    </div>
   );
 }
 
@@ -635,16 +655,28 @@ function PlayerScreen({ state, act, error, connected, onLeave }) {
         </div>
       </header>
       {state.nightOfPeace && state.phase === "ashFall" && <p className="mb-3 text-sm text-[#e6c27a]" data-testid="night-of-peace">A night of peace. The inherited kill does not fall.</p>}
-      <div className="mb-4 grid grid-cols-4 gap-2 text-sm">
-        {["role", "act", "chat", "notes"].map((id) => (
-          <button key={id} className={`tap rounded-xl border border-[#4a342c] ${tab === id ? "bg-[#e07040] text-[#1a100e]" : ""}`} onClick={() => setTab(id)}>{id === "act" ? "Act" : id[0].toUpperCase() + id.slice(1)}</button>
+      <div className={`mb-4 grid gap-2 text-sm ${state.mindList ? "grid-cols-5" : "grid-cols-4"}`}>
+        {(state.mindList ? ["role", "mind", "act", "chat", "notes"] : ["role", "act", "chat", "notes"]).map((id) => (
+          <button key={id} className={`tap rounded-xl border border-[#4a342c] ${tab === id ? "bg-[#e07040] text-[#1a100e]" : ""}`} onClick={() => setTab(id)}>{id === "act" ? "Act" : id === "mind" ? "Mind" : id[0].toUpperCase() + id.slice(1)}</button>
         ))}
       </div>
       {tab === "role" && <RoleHome state={state} />}
+      {tab === "mind" && <MindHome list={state.mindList} />}
       {tab === "act" && <ActPanel state={state} act={act} />}
       {tab === "chat" && <PlayerChat state={state} act={act} />}
       {tab === "notes" && <Notes you={you} act={act} />}
     </div>
+  );
+}
+
+function MindHome({ list }) {
+  return (
+    <section className="panel p-4" data-testid="mind-list">
+      <h2 className="serif text-2xl">The table, as you read it</h2>
+      <ul className="mt-3 grid gap-2 text-sm">
+        {(list || []).map((row) => <li key={row.id}>{row.name} · {row.roleName}{row.alive ? "" : " · dead"}</li>)}
+      </ul>
+    </section>
   );
 }
 

@@ -19,6 +19,8 @@ import {
   setAshTouched,
   setSoulboundPair,
   startRound,
+  applyDeath,
+  checkWins,
   tallies,
   nominationWeight,
   winnerLabel,
@@ -37,6 +39,7 @@ export function freshTable() {
   return {
     ...blankState(),
     setupNames: [],
+    holdWin: true,
     log: [{ id: "boot", text: "Room open. Players join with the code, then the GM deals." }],
   };
 }
@@ -103,7 +106,7 @@ export function reduce(state, action) {
       if (state.dealt) throw new Error("Roles are already dealt.");
       const next = applyDeal(state, state.setupNames);
       if (!next.dealt) throw new Error("Deal needs 5 to 20 names.");
-      return { ...next, automate: state.automate === true };
+      return { ...next, automate: state.automate === true, holdWin: true };
     }
     case "edit-night": {
       if (state.phase !== "ashFall") throw new Error("The night is closed.");
@@ -122,7 +125,94 @@ export function reduce(state, action) {
     }
     case "ash-touched": {
       if (!state.dealt) throw new Error("Deal first.");
-      return setAshTouched(state, action.playerId || "");
+      const person = state.players.find((p) => p.id === action.playerId);
+      return pushPlain(setAshTouched(state, action.playerId || ""), person ? "GM marked " + person.name + " Ash Touched." : "GM cleared Ash Touched.");
+    }
+    case "undo-ash": {
+      if (!state.dealt) throw new Error("Deal first.");
+      const person = state.players.find((p) => p.id === action.playerId);
+      if (!person) throw new Error("Unknown player.");
+      return pushPlain({
+        ...state,
+        players: state.players.map((p) => (p.id === person.id ? { ...p, ashTouched: false } : p)),
+      }, "GM cleared Ash Touched on " + person.name + ".");
+    }
+    case "gm-mire": {
+      if (!state.dealt) throw new Error("Deal first.");
+      const person = state.players.find((p) => p.id === action.playerId);
+      if (!person) throw new Error("Unknown player.");
+      return pushPlain({
+        ...state,
+        players: state.players.map((p) => (p.id === person.id ? { ...p, gmMire: true } : p)),
+      }, "GM marked " + person.name + " Mire Touched. Players are not told.");
+    }
+    case "undo-mire": {
+      if (!state.dealt) throw new Error("Deal first.");
+      const person = state.players.find((p) => p.id === action.playerId);
+      if (!person) throw new Error("Unknown player.");
+      return pushPlain({
+        ...state,
+        players: state.players.map((p) => (p.id === person.id ? { ...p, gmMire: false } : p)),
+      }, "GM cleared the Mire Touched note on " + person.name + ".");
+    }
+    case "gm-kill": {
+      if (!state.dealt) throw new Error("Deal first.");
+      if (state.gmEnded) throw new Error("The game is over.");
+      const person = state.players.find((p) => p.id === action.playerId);
+      if (!person?.alive) throw new Error("That player is already dead.");
+      const snapshot = {
+        players: state.players.map((p) => ({ ...p })),
+        deathCount: state.deathCount || 0,
+        tyrantHasDied: state.tyrantHasDied,
+        successorId: state.successorId,
+        shadowTakeover: state.shadowTakeover,
+        successionOver: state.successionOver,
+        successionPasses: state.successionPasses,
+        peaceRound: state.peaceRound,
+        nightOfPeace: state.nightOfPeace,
+        publicNotices: [...(state.publicNotices || [])],
+        nightDeaths: { ...(state.nightDeaths || {}) },
+        suggestedWinner: state.suggestedWinner || "",
+        suggestedReason: state.suggestedReason || "",
+      };
+      let next = applyDeath({ ...state, holdWin: true }, person.id, "the GM");
+      next = checkWins(next, next.phase === "dawnAccord");
+      const diedNow = snapshot.players.filter((before) => before.alive && !next.players.find((p) => p.id === before.id)?.alive).map((before) => before.name);
+      const prior = (next.nightDeaths || {})[String(state.round)] || [];
+      const list = [...prior];
+      for (const name of diedNow) if (!list.includes(name)) list.push(name);
+      next = {
+        ...next,
+        holdWin: true,
+        nightDeaths: { ...(next.nightDeaths || {}), [String(state.round)]: list },
+        publicNotices: tonightNotice(next.publicNotices, list),
+        gmKillUndo: { ...(state.gmKillUndo || {}), [person.id]: snapshot },
+      };
+      return pushPlain(next, "GM killed " + person.name + ".");
+    }
+    case "undo-kill": {
+      if (!state.dealt) throw new Error("Deal first.");
+      const snap = (state.gmKillUndo || {})[action.playerId];
+      if (!snap) throw new Error("There is no kill to undo.");
+      const person = state.players.find((p) => p.id === action.playerId);
+      const rest = { ...(state.gmKillUndo || {}) };
+      delete rest[action.playerId];
+      return pushPlain({
+        ...state,
+        ...snap,
+        holdWin: true,
+        gmEnded: state.gmEnded,
+        automate: state.automate,
+        gmKillUndo: rest,
+        gmPlainLog: state.gmPlainLog,
+      }, "GM undid the kill on " + (person?.name || "that player") + ". " + (person?.name || "They") + " " + (person ? "is" : "are") + " alive again.");
+    }
+    case "end-game": {
+      if (!state.dealt) throw new Error("Deal first.");
+      if (!action.confirm) throw new Error("Confirm the ending.");
+      const winner = action.winner;
+      if (!["lumen", "ashen", "syndic", "shadow"].includes(winner)) throw new Error("Pick who won.");
+      return addLog({ ...state, winner, gmEnded: true, suggestedWinner: "", suggestedReason: "" }, "GM ended the game. Result: " + winnerLabel(winner) + ".");
     }
     case "soulbound": {
       if (!state.dealt) throw new Error("Deal first.");
@@ -236,15 +326,20 @@ function beginGame(state) {
 
 function advance(state, action = {}) {
   if (state.pendingParadoxFlip) throw new Error("Enter the Paradox coin first.");
-  if (state.winner) throw new Error("The game is over.");
+  if (state.gmEnded || state.winner) throw new Error("The game is over.");
   if (state.phase === "setup") return beginGame(state);
   if (state.phase === "ashFall") {
     const aliveBefore = new Set(state.players.filter((p) => p.alive).map((p) => p.id));
-    let next = resolveAshFall(state);
+    let next = resolveAshFall({ ...state, holdWin: true });
     const died = state.players.filter((p) => aliveBefore.has(p.id) && !next.players.find((q) => q.id === p.id)?.alive).map((p) => p.name);
-    const notice = died.length ? "Died tonight: " + died.join(", ") + "." : "Nobody died tonight.";
-    const nightDeaths = { ...(next.nightDeaths || {}), [String(state.round)]: died };
-    return { ...next, nightDeaths, publicNotices: [...(next.publicNotices || []), notice] };
+    const list = [...((state.nightDeaths || {})[String(state.round)] || [])];
+    for (const name of died) if (!list.includes(name)) list.push(name);
+    return {
+      ...next,
+      holdWin: true,
+      nightDeaths: { ...(next.nightDeaths || {}), [String(state.round)]: list },
+      publicNotices: tonightNotice(next.publicNotices, list),
+    };
   }
   if (state.phase === "lumination") {
     let next = resolveLumination(answerSelfKnownQuestion(state));
@@ -490,12 +585,15 @@ export function viewFor(state, viewer, extras) {
         echoCopy: state.echoCopyRoleId && p.roleId === "the-echo-thief" ? roleOf(state.echoCopyRoleId).name : "",
         charges: p.charges,
         gmNotes: p.gmNotes || "",
+        gmMire: Boolean(p.gmMire),
         inbox: state.results.filter((r) => r.playerId === p.id).map((r) => ({ text: r.text })),
       })),
       log: state.log.map((l) => ({ id: l.id, text: l.text, secret: true })),
       chats: extras.chats,
       tallies: state.phase === "dawnAccord" ? tallies(state) : [],
       reminders: buildReminders(state),
+      suggestedWinner: state.suggestedWinner || null,
+      suggestedReason: state.suggestedReason || "",
     };
   }
   const self = state.players.find((p) => p.id === viewer.playerId);
@@ -525,7 +623,7 @@ export function viewFor(state, viewer, extras) {
       short: role.short,
       charges: role.charged ? self.charges : null,
       summary: role.ability,
-      inbox: state.results.filter((r) => r.playerId === self.id).map((r) => ({ text: r.text })),
+      inbox: scrubMindInbox(state, self),
       notes: self.notes || "",
       teammates,
       won: seatWon(state, self),
@@ -533,9 +631,21 @@ export function viewFor(state, viewer, extras) {
       effective: self.tempRoleId ? roleOf(self.tempRoleId).name : "",
     },
     menu: menuFor(state, self),
+    mindList: self.roleId === "the-ashen-mind" ? mindRoster(state) : undefined,
+    reveal: mindReveal(base.reveal, self, state),
     chats: chatsFor(extras.chats, self, viewer),
     publicLog: playerPublicLog(state.publicNotices),
   };
+}
+
+function mindReveal(reveal, self, state) {
+  if (!reveal || self.roleId !== "the-ashen-mind") return reveal;
+  const byId = new Map(mindRoster(state).map((row) => [row.id, row]));
+  return reveal.map((row) => {
+    const cover = byId.get(row.id);
+    if (!cover) return row;
+    return { ...row, roleId: cover.roleId, roleName: cover.roleName, alignment: roleOf(cover.roleId).team.toLowerCase() };
+  });
 }
 
 function chatsFor(chats, self, viewer) {
@@ -687,6 +797,11 @@ function logBook(state) {
     if (!groups.has(key)) groups.set(key, { round: Number(round), phase: "ashFall", lines: [] });
     groups.get(key).lines.push(died.length ? "Died: " + died.join(", ") + "." : "Nobody died.");
   }
+  for (const entry of state.gmPlainLog || []) {
+    const key = `${entry.round}:${entry.phase}`;
+    if (!groups.has(key)) groups.set(key, { round: Number(entry.round), phase: entry.phase, lines: [] });
+    groups.get(key).lines.push(entry.text);
+  }
   const order = { ashFall: 1, lumination: 2, dawnAccord: 3 };
   const title = { ashFall: "Ash Fall", lumination: "Lumination", dawnAccord: "Dawn Accord" };
   const currentKey = `${state.round}:${state.phase}`;
@@ -699,6 +814,41 @@ function logBook(state) {
       lines: segment.lines,
     })),
   };
+}
+
+function tonightNotice(notices, names) {
+  const rest = (notices || []).filter((text) => !text.startsWith("Died tonight:") && !text.startsWith("Nobody died tonight."));
+  const line = names.length ? "Died tonight: " + names.join(", ") + "." : "Nobody died tonight.";
+  return rest.concat([line]);
+}
+
+function pushPlain(state, text) {
+  const gmPlainLog = [...(state.gmPlainLog || []), { round: state.round || 0, phase: state.phase || "setup", text }];
+  return addLog({ ...state, gmPlainLog }, text);
+}
+
+function mindRoster(state) {
+  const inPlay = new Set(state.players.map((p) => p.roleId));
+  const unclaimed = ROLES.map((role) => role.id).filter((id) => !inPlay.has(id)).sort();
+  const masked = state.players.filter((p) => roleOf(p.roleId).masked).slice().sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+  const cover = {};
+  masked.forEach((player, index) => {
+    cover[player.id] = unclaimed[index % Math.max(unclaimed.length, 1)] || ROLES.find((role) => role.id !== player.roleId).id;
+  });
+  return state.players.map((player) => {
+    const shown = cover[player.id] || player.roleId;
+    return { id: player.id, name: player.name, alive: player.alive, roleId: shown, roleName: roleOf(shown).name };
+  });
+}
+
+function scrubMindInbox(state, self) {
+  const rows = state.results.filter((r) => r.playerId === self.id);
+  if (self.roleId !== "the-ashen-mind") return rows.map((r) => ({ text: r.text }));
+  const masked = state.players.filter((p) => roleOf(p.roleId).masked && p.id !== self.id);
+  return rows.filter((row) => {
+    if (row.text.startsWith("Start-of-round snapshot")) return false;
+    return !masked.some((player) => row.text.includes(player.name) && row.text.includes(roleOf(player.roleId).name));
+  }).map((row) => ({ text: row.text }));
 }
 
 function ownActionNote(state, actor, action) {
