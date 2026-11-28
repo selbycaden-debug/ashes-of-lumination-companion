@@ -398,3 +398,33 @@ test("the phase timer stays in sync and the recap appears only after End game", 
     await close();
   }
 });
+
+function assignedToSomeoneElse(node, names, selfName) {
+  if (!node || typeof node !== "object") return false;
+  if (node.name && node.name !== selfName && names.has(node.name) && (node.roleId || node.roleName)) return true;
+  return Object.values(node).some((value) => assignedToSomeoneElse(value, names, selfName));
+}
+
+test("players can read all 26 roles during the game without learning who holds them", async () => {
+  const { port, close } = await start(0);
+  try {
+    const { players } = await seated(port, ["Ava", "Ben", "Cara", "Dee", "Eli"]);
+    for (const player of players) {
+      const view = (await call(port, "/api/state", { token: player.token })).data;
+      assert.equal(view.phase, "ashFall");
+      assert.equal(view.catalogue.length, 26);
+      assert.ok(view.catalogue.every((role) => role.id && role.name && role.ability && role.short && role.team));
+      assert.equal(new Set(view.catalogue.map((role) => role.id)).size, 26);
+      assert.equal(view.catalogue.some((role) => role.holder || role.playerId || role.inPlay || role.count), false);
+      assert.equal(JSON.stringify(view.seats).includes("roleId"), false);
+      assert.equal(view.reveal, null);
+      assert.equal(view.recap, undefined);
+      const names = new Set(view.seats.map((seat) => seat.name));
+      const { mindList, ...withoutMind } = view;
+      assert.equal(assignedToSomeoneElse(withoutMind, names, view.you.name), false);
+      if (view.you.roleId !== "the-ashen-mind") assert.equal(mindList, undefined);
+    }
+  } finally {
+    await close();
+  }
+});

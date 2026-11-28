@@ -853,6 +853,7 @@ function startPhaseTimer(state, minutes) {
       status: "running",
       endsAt: Date.now() + remainingMs,
       remainingMs,
+      durationMs: remainingMs,
     },
   };
 }
@@ -881,11 +882,12 @@ function addPhaseTimer(state, seconds) {
   if (!timer || (timer.status !== "running" && timer.status !== "paused")) throw new Error("Start a timer first.");
   const extra = Number(seconds) * 1000;
   if (!Number.isFinite(extra) || extra <= 0) throw new Error("Choose how much time to add.");
+  const durationMs = (timer.durationMs || timer.remainingMs || 0) + extra;
   if (timer.status === "paused") {
-    return { ...state, phaseTimer: { ...timer, remainingMs: timer.remainingMs + extra } };
+    return { ...state, phaseTimer: { ...timer, remainingMs: timer.remainingMs + extra, durationMs } };
   }
   const endsAt = timer.endsAt + extra;
-  return { ...state, phaseTimer: { ...timer, endsAt, remainingMs: Math.max(0, endsAt - Date.now()) } };
+  return { ...state, phaseTimer: { ...timer, endsAt, durationMs, remainingMs: Math.max(0, endsAt - Date.now()) } };
 }
 
 function activeTimer(state) {
@@ -898,12 +900,13 @@ function presentTimer(state) {
   const timer = activeTimer(state);
   if (!timer) return null;
   const serverNow = Date.now();
+  const durationMs = timer.durationMs || timer.remainingMs || 0;
   if (timer.status === "running") {
     const remainingMs = Math.max(0, (timer.endsAt || 0) - serverNow);
-    return { status: remainingMs === 0 ? "expired" : "running", remainingMs, serverNow };
+    return { status: remainingMs === 0 ? "expired" : "running", remainingMs, durationMs, serverNow };
   }
-  if (timer.status === "expired") return { status: "expired", remainingMs: 0, serverNow };
-  return { status: "paused", remainingMs: Math.max(0, timer.remainingMs || 0), serverNow };
+  if (timer.status === "expired") return { status: "expired", remainingMs: 0, durationMs, serverNow };
+  return { status: "paused", remainingMs: Math.max(0, timer.remainingMs || 0), durationMs, serverNow };
 }
 
 function whenLabel(phase, round) {
