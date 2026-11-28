@@ -43,6 +43,7 @@ test("five phones sit a full night, day, and vote", async ({ browser }) => {
   }
 
   await expect(gm.getByTestId("seat-list")).toContainText("Eli");
+  await gm.screenshot({ path: "/opt/cursor/artifacts/lobby.png" });
   await expect(gm.getByTestId("advanced-setup")).not.toHaveAttribute("open");
   await gm.getByTestId("open-rulebook").click();
   await expect(gm.getByTestId("rulebook-headline")).toHaveText("The main goal is always to kill the Ashen Tyrant.");
@@ -88,6 +89,8 @@ test("five phones sit a full night, day, and vote", async ({ browser }) => {
     for (let i = 0; i < count; i++) ids.push(await forms.nth(i).getAttribute("data-testid"));
     await submitForms(page, ids);
   }
+  await players[0].getByRole("button", { name: "Act", exact: true }).click();
+  await players[0].screenshot({ path: "/opt/cursor/artifacts/night-action.png" });
   await expect.poll(async () => {
     for (const page of players) {
       if (await page.getByText("Action submitted").count()) return true;
@@ -126,7 +129,8 @@ test("five phones sit a full night, day, and vote", async ({ browser }) => {
     await expect(page.getByText("Nomination submitted")).toBeVisible();
     await submitForms(page, ["form-vote"]);
   }
-  await gm.getByRole("button", { name: "Voting", exact: true }).click();
+  await players[0].screenshot({ path: "/opt/cursor/artifacts/vote.png" });
+  await gm.getByRole("button", { name: "Vote", exact: true }).click();
   await expect(gm.getByTestId("voting-tab")).toContainText("Nominations");
   await gm.getByTestId("execution-choice").selectOption("NO_EXEC");
   await gm.getByTestId("advance").click();
@@ -165,11 +169,17 @@ test("GM kill and mire notes stay private, and the table does not end itself", a
   }
   await gm.getByTestId("deal").click();
   const tyrant = gm.getByTestId("player-row").filter({ hasText: "The Ashen Tyrant" });
-  const tyrantName = (await tyrant.locator("h3").innerText()).trim();
+  await expect(tyrant).toBeVisible();
+  await gm.getByTestId("gm-table").screenshot({ path: "/opt/cursor/artifacts/gm-phone.png" });
+  await gm.setViewportSize({ width: 1280, height: 800 });
+  await gm.screenshot({ path: "/opt/cursor/artifacts/gm-laptop.png" });
+  await gm.setViewportSize({ width: 390, height: 844 });
+  const tyrantName = (await tyrant.locator("h3").innerText()).trim().split(/\s+/)[0];
   const seat = players[NAMES.indexOf(tyrantName)];
+  await seat.screenshot({ path: "/opt/cursor/artifacts/ashen-role-card.png" });
   await gm.getByTestId("timer-5").click();
   await expect(seat.getByTestId("countdown")).toHaveText(/\d+:\d\d/);
-  await seat.screenshot({ path: "/opt/cursor/artifacts/player-timer.png", fullPage: true });
+  await seat.screenshot({ path: "/opt/cursor/artifacts/player-timer.png" });
   await expect(tyrant.getByTestId("set-ash")).toBeDisabled();
   await expect(tyrant.getByTestId("gm-mire")).toBeDisabled();
   await expect(tyrant.getByTestId("set-ash")).toHaveAttribute("title", "Ashen are immune");
@@ -183,7 +193,8 @@ test("GM kill and mire notes stay private, and the table does not end itself", a
   await expect(seat.getByTestId("public-log")).toContainText(`Died tonight: ${tyrantName}.`);
   await expect(seat.getByText("win condition met")).toHaveCount(0);
   await gm.getByTestId("gm-table").screenshot({ path: "/opt/cursor/artifacts/gm-table-remnant.png" });
-  await seat.screenshot({ path: "/opt/cursor/artifacts/dead-player-role-card.png", fullPage: true });
+  await seat.screenshot({ path: "/opt/cursor/artifacts/dead-player-role-card.png" });
+  await seat.screenshot({ path: "/opt/cursor/artifacts/remnant-card.png" });
   await tyrant.getByTestId("undo-kill").click();
   await expect(tyrant.locator("h3")).not.toContainText("dead");
   await expect(tyrant.getByTestId("portrait")).toHaveAttribute("src", /\/portraits\/the-ashen-tyrant\.webp/);
@@ -192,14 +203,14 @@ test("GM kill and mire notes stay private, and the table does not end itself", a
   await expect(seat.getByTestId("public-log")).toHaveCount(0);
 
   const lumen = gm.getByTestId("player-row").filter({ hasText: "· Lumen" }).first();
-  const lumenName = (await lumen.locator("h3").innerText()).trim();
+  const lumenName = (await lumen.locator("h3").innerText()).trim().split(/\s+/)[0];
   const lumenPage = players[NAMES.indexOf(lumenName)];
   await lumen.getByTestId("gm-mire").click();
   await expect(lumen).toContainText("Mire note");
   await expect(lumenPage.getByText("Mire note")).toHaveCount(0);
   await lumen.getByTestId("undo-mire").click();
   await expect(lumen.getByText("Mire note")).toHaveCount(0);
-  await lumenPage.screenshot({ path: "/opt/cursor/artifacts/lumen-role-card.png", fullPage: true });
+  await lumenPage.screenshot({ path: "/opt/cursor/artifacts/lumen-role-card.png" });
   await lumenPage.getByTestId("open-catalogue").click();
   await expect(lumenPage.getByTestId("catalogue-Lumen").getByTestId("symbol-symbol-lumen-128")).toHaveAttribute("src", /symbol-lumen-128\.webp\?v=/);
   await expect(lumenPage.getByTestId("catalogue-Unaligned").getByTestId("symbol-symbol-unaligned-128")).toHaveAttribute("src", /symbol-unaligned-128\.webp\?v=/);
@@ -216,5 +227,5 @@ test("GM kill and mire notes stay private, and the table does not end itself", a
   await expect(gm.getByTestId("recap")).toContainText("The Ashen Tyrant");
   await expect(seat.getByTestId("recap")).toContainText("The Ashen Tyrant");
   await expect(gm.getByTestId("recap-download")).toBeVisible();
-  await seat.screenshot({ path: "/opt/cursor/artifacts/player-recap.png", fullPage: true });
+  await seat.screenshot({ path: "/opt/cursor/artifacts/player-recap.png" });
 });

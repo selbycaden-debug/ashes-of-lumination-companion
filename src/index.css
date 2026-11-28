@@ -1,31 +1,4 @@
 @import "tailwindcss";
-
-:root {
-  color: #f3eedf;
-  background: #07070a;
-  font-family: "Cormorant Garamond", Georgia, serif;
-  font-size: 18px;
-}
-
-body {
-  margin: 0;
-  min-height: 100dvh;
-  background:
-    radial-gradient(900px 420px at 0% 0%, rgba(201, 168, 90, 0.12), transparent 55%),
-    #07070a;
-}
+@import "./theme/emberfall.css";
 
 button, input, select, textarea { font: inherit; }
-
-.serif { font-family: Cinzel, Palatino, serif; letter-spacing: 0.04em; }
-.label { font-family: "Marcellus SC", Palatino, serif; letter-spacing: 0.14em; text-transform: uppercase; }
-
-.panel {
-  background: #1d1b1c;
-  border: 1px solid #8a7038;
-  border-radius: 2px;
-}
-
-.tap {
-  min-height: 44px;
-}
