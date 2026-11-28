@@ -174,11 +174,13 @@ export function reduce(state, action) {
         nightOfPeace: state.nightOfPeace,
         publicNotices: [...(state.publicNotices || [])],
         nightDeaths: { ...(state.nightDeaths || {}) },
+        obituary: (state.obituary || []).slice(),
         suggestedWinner: state.suggestedWinner || "",
         suggestedReason: state.suggestedReason || "",
       };
       let next = applyDeath({ ...state, holdWin: true }, person.id, "the GM");
       next = checkWins(next, next.phase === "dawnAccord");
+      next = recordDeaths(state.players, next, state.phase, state.round);
       const diedNow = snapshot.players.filter((before) => before.alive && !next.players.find((p) => p.id === before.id)?.alive).map((before) => before.name);
       const prior = (next.nightDeaths || {})[String(state.round)] || [];
       const list = [...prior];
@@ -209,12 +211,23 @@ export function reduce(state, action) {
         gmPlainLog: state.gmPlainLog,
       }, "GM undid the kill on " + (person?.name || "that player") + ". " + (person?.name || "They") + " " + (person ? "is" : "are") + " alive again.");
     }
+    case "timer-start":
+      return startPhaseTimer(state, action.minutes);
+    case "timer-pause":
+      return pausePhaseTimer(state);
+    case "timer-resume":
+      return resumePhaseTimer(state);
+    case "timer-add":
+      return addPhaseTimer(state, action.seconds);
+    case "timer-stop":
+      return { ...state, phaseTimer: null };
     case "end-game": {
       if (!state.dealt) throw new Error("Deal first.");
       if (!action.confirm) throw new Error("Confirm the ending.");
       const winner = action.winner;
       if (!["lumen", "ashen", "syndic", "shadow"].includes(winner)) throw new Error("Pick who won.");
-      return addLog({ ...state, winner, gmEnded: true, suggestedWinner: "", suggestedReason: "" }, "GM ended the game. Result: " + winnerLabel(winner) + ".");
+      const closed = addLog({ ...state, winner, gmEnded: true, suggestedWinner: "", suggestedReason: "", phaseTimer: null }, "GM ended the game. Result: " + winnerLabel(winner) + ".");
+      return stampLeaving(state, closed);
     }
     case "soulbound": {
       if (!state.dealt) throw new Error("Deal first.");
@@ -329,24 +342,25 @@ function beginGame(state) {
 function advance(state, action = {}) {
   if (state.pendingParadoxFlip) throw new Error("Enter the Paradox coin first.");
   if (state.gmEnded || state.winner) throw new Error("The game is over.");
-  if (state.phase === "setup") return beginGame(state);
+  if (state.phase === "setup") return finishPhase(state, beginGame(state));
   if (state.phase === "ashFall") {
     const aliveBefore = new Set(state.players.filter((p) => p.alive).map((p) => p.id));
     let next = resolveAshFall({ ...state, holdWin: true });
     const died = state.players.filter((p) => aliveBefore.has(p.id) && !next.players.find((q) => q.id === p.id)?.alive).map((p) => p.name);
     const list = [...((state.nightDeaths || {})[String(state.round)] || [])];
     for (const name of died) if (!list.includes(name)) list.push(name);
-    return {
+    next = {
       ...next,
       holdWin: true,
       nightDeaths: { ...(next.nightDeaths || {}), [String(state.round)]: list },
       publicNotices: tonightNotice(next.publicNotices, list),
     };
+    return finishPhase(state, next);
   }
   if (state.phase === "lumination") {
     let next = resolveLumination(answerSelfKnownQuestion(state));
     if (!Object.keys(next.nominations || {}).length) next = { ...next, nominees: [] };
-    return next;
+    return finishPhase(state, next);
   }
   if (state.phase === "dawnAccord") {
     let next = computeDawnBallot(state);
@@ -362,7 +376,7 @@ function advance(state, action = {}) {
       const id = choice === "NO_EXEC" || choice === "No execution" ? NO_EXEC : choice;
       next = executeNominee(next, id);
     }
-    return closeDawnAccord(next);
+    return finishPhase(state, closeDawnAccord(next));
   }
   throw new Error("There is nothing to resolve.");
 }
@@ -533,6 +547,8 @@ export function viewFor(state, viewer, extras) {
       ? (state.nominees || []).filter(Boolean).map((id) => ({ id, name: id === NO_EXEC ? "No execution" : state.players.find((p) => p.id === id)?.name || id }))
       : null,
     publicLog: (state.publicNotices || []).map((text, i) => ({ id: "pub" + i, text })),
+    timer: presentTimer(state),
+    recap: state.winner ? buildRecap(state) : undefined,
     catalogue,
     reveal: state.winner
       ? state.players.map((p) => ({ id: p.id, name: p.name, roleId: p.roleId, roleName: roleOf(p.roleId).name, alignment: p.team.toLowerCase(), alive: p.alive }))
@@ -815,6 +831,170 @@ function logBook(state) {
       title: `${title[segment.phase] || segment.phase} ${segment.round}`,
       lines: segment.lines,
     })),
+  };
+}
+
+function finishPhase(before, after) {
+  const withDeaths = recordDeaths(before.players, after, before.phase, before.round);
+  return { ...stampLeaving(before, withDeaths), phaseTimer: null };
+}
+
+function startPhaseTimer(state, minutes) {
+  if (!state.dealt) throw new Error("Deal first.");
+  if (state.gmEnded || state.winner) throw new Error("The game is over.");
+  const length = Number(minutes);
+  if (!Number.isFinite(length) || length <= 0 || length > 180) throw new Error("Choose a length in minutes.");
+  const remainingMs = Math.round(length * 60 * 1000);
+  return {
+    ...state,
+    phaseTimer: {
+      phase: state.phase,
+      round: state.round,
+      status: "running",
+      endsAt: Date.now() + remainingMs,
+      remainingMs,
+    },
+  };
+}
+
+function pausePhaseTimer(state) {
+  const timer = activeTimer(state);
+  if (!timer || timer.status !== "running") throw new Error("The timer is not running.");
+  const remainingMs = Math.max(0, timer.endsAt - Date.now());
+  return {
+    ...state,
+    phaseTimer: { ...timer, status: remainingMs === 0 ? "expired" : "paused", endsAt: null, remainingMs },
+  };
+}
+
+function resumePhaseTimer(state) {
+  const timer = activeTimer(state);
+  if (!timer || timer.status !== "paused") throw new Error("The timer is not paused.");
+  return {
+    ...state,
+    phaseTimer: { ...timer, status: "running", endsAt: Date.now() + timer.remainingMs },
+  };
+}
+
+function addPhaseTimer(state, seconds) {
+  const timer = activeTimer(state);
+  if (!timer || (timer.status !== "running" && timer.status !== "paused")) throw new Error("Start a timer first.");
+  const extra = Number(seconds) * 1000;
+  if (!Number.isFinite(extra) || extra <= 0) throw new Error("Choose how much time to add.");
+  if (timer.status === "paused") {
+    return { ...state, phaseTimer: { ...timer, remainingMs: timer.remainingMs + extra } };
+  }
+  const endsAt = timer.endsAt + extra;
+  return { ...state, phaseTimer: { ...timer, endsAt, remainingMs: Math.max(0, endsAt - Date.now()) } };
+}
+
+function activeTimer(state) {
+  const timer = state.phaseTimer;
+  if (!timer || timer.phase !== state.phase || Number(timer.round) !== Number(state.round)) return null;
+  return timer;
+}
+
+function presentTimer(state) {
+  const timer = activeTimer(state);
+  if (!timer) return null;
+  const serverNow = Date.now();
+  if (timer.status === "running") {
+    const remainingMs = Math.max(0, (timer.endsAt || 0) - serverNow);
+    return { status: remainingMs === 0 ? "expired" : "running", remainingMs, serverNow };
+  }
+  if (timer.status === "expired") return { status: "expired", remainingMs: 0, serverNow };
+  return { status: "paused", remainingMs: Math.max(0, timer.remainingMs || 0), serverNow };
+}
+
+function whenLabel(phase, round) {
+  if (phase === "ashFall") return "Night " + round;
+  if (phase === "lumination") return "Day " + round;
+  if (phase === "dawnAccord") return "Dawn Accord " + round;
+  if (phase === "setup") return "before the first night";
+  return "Round " + round;
+}
+
+function classifyHow(reason) {
+  const text = String(reason || "");
+  if (/gm/i.test(text)) return "GM kill";
+  if (/execution/i.test(text)) return "execution";
+  if (/sunmark|secret day|day kill/i.test(text)) return "day kill";
+  return "night kill";
+}
+
+function recordDeaths(beforePlayers, after, phase, round) {
+  const prev = new Map((beforePlayers || []).map((player) => [player.id, player]));
+  const obituary = (after.obituary || []).slice();
+  const known = new Set(obituary.map((row) => row.id));
+  const logs = (after.log || []).map((line) => line.text);
+  for (const player of after.players || []) {
+    const was = prev.get(player.id);
+    if (!was?.alive || player.alive || known.has(player.id)) continue;
+    const died = logs.find((text) => text.startsWith(player.name + " has died ("));
+    const bound = logs.find((text) => text.startsWith(player.name + " dies with their Soulbound"));
+    let how = phase === "dawnAccord" ? "execution" : phase === "lumination" ? "day kill" : "night kill";
+    if (died) {
+      const reason = died.slice((player.name + " has died (").length, died.lastIndexOf(")"));
+      how = classifyHow(reason);
+    } else if (bound) how = "Soulbound";
+    obituary.push({ id: player.id, name: player.name, round, phase, when: whenLabel(phase, round), how });
+  }
+  return { ...after, obituary };
+}
+
+function phaseTitle(phase, round) {
+  if (phase === "ashFall") return "Ash Fall " + round;
+  if (phase === "lumination") return "Lumination " + round;
+  if (phase === "dawnAccord") return "Dawn Accord " + round;
+  if (phase === "setup") return "Before the first night";
+  return (phase || "Phase") + " " + round;
+}
+
+function stampLeaving(before, after) {
+  const id = `${before.round}:${before.phase}`;
+  const chronicle = [...(before.chronicle || [])];
+  if (!chronicle.some((segment) => segment.id === id)) {
+    const lines = [];
+    for (const action of (after.actions || []).filter((item) => item.round === before.round && item.phase === before.phase)) {
+      lines.push(plainAction(after, action));
+    }
+    if (before.phase === "dawnAccord") {
+      for (const [by, target] of Object.entries(before.nominations || {})) {
+        lines.push(personName(before, by) + " nominated " + personName(before, target) + ".");
+      }
+      for (const [voter, choice] of Object.entries(before.votes || {})) {
+        if (!choice || choice === "SAVE") continue;
+        const choiceName = choice === NO_EXEC ? "no execution" : personName(before, choice);
+        lines.push(personName(before, voter) + " voted for " + choiceName + ".");
+      }
+    }
+    for (const entry of after.gmPlainLog || []) {
+      if (Number(entry.round) === Number(before.round) && entry.phase === before.phase) lines.push(entry.text);
+    }
+    const deaths = (after.obituary || []).filter((row) => row.round === before.round && row.phase === before.phase);
+    for (const death of deaths) lines.push(death.name + " died on " + death.when + " by " + death.how + ".");
+    if (before.phase === "ashFall" && deaths.length === 0) lines.push("Nobody died.");
+    if (lines.length) chronicle.push({ id, round: before.round, phase: before.phase, title: phaseTitle(before.phase, before.round), lines });
+  }
+  return { ...after, chronicle, phaseTimer: null };
+}
+
+function buildRecap(state) {
+  const order = { setup: 0, ashFall: 1, lumination: 2, dawnAccord: 3 };
+  const segments = [...(state.chronicle || [])].sort((a, b) => a.round - b.round || (order[a.phase] || 0) - (order[b.phase] || 0));
+  return {
+    result: winnerLabel(state.winner),
+    winner: state.winner,
+    players: state.players.map((player) => ({
+      id: player.id,
+      name: player.name,
+      roleId: player.roleId,
+      roleName: roleOf(player.roleId).name,
+      alignment: player.team,
+      alive: player.alive,
+    })),
+    deaths: (state.obituary || []).map((row) => ({ name: row.name, when: row.when, how: row.how })),
+    segments: segments.map((segment) => ({ title: segment.title, lines: segment.lines })),
   };
 }
 

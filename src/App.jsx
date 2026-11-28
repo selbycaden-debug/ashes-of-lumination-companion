@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const TOKEN_KEY = "aol-seat-token";
 const ASSET_VERSION = "3";
@@ -263,8 +263,11 @@ function GmScreen({ state, act, error, connected, onLeave }) {
       </header>
       {!state.dealt ? (
         <Lobby state={state} act={act} link={link} />
+      ) : state.phase === "ended" && state.recap ? (
+        <Recap recap={state.recap} gm />
       ) : (
         <>
+          <PhaseClock state={state} act={act} />
           <PhaseBar state={state} act={act} />
           {state.phase === "ashFall" && <AshfallPanel state={state} act={act} />}
           {state.phase === "setup" && <SoulboundCard state={state} act={act} />}
@@ -398,6 +401,162 @@ function Toggle({ label, checked, onChange, testid }) {
       <input data-testid={testid} type="checkbox" className="mt-1 h-5 w-5" checked={!!checked} onChange={(e) => onChange(e.target.checked)} />
       <span>{label}</span>
     </label>
+  );
+}
+
+function formatMs(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const minutes = Math.floor(total / 60);
+  const seconds = total % 60;
+  return minutes + ":" + String(seconds).padStart(2, "0");
+}
+
+function useRemaining(timer) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!timer || timer.status !== "running") return undefined;
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [timer]);
+  if (!timer) return 0;
+  if (timer.status === "expired") return 0;
+  if (timer.status === "paused") return timer.remainingMs;
+  return Math.max(0, timer.remainingMs - (now - timer.serverNow));
+}
+
+function useTimeUp(timer, remaining) {
+  const sawRunning = useRef(false);
+  const played = useRef(false);
+  useEffect(() => {
+    if (timer?.status === "running" && remaining > 0) {
+      sawRunning.current = true;
+      played.current = false;
+    }
+    if (!sawRunning.current || played.current || remaining > 0) return;
+    played.current = true;
+    try { navigator.vibrate?.([160, 60, 160]); } catch { /* this phone has no vibrate */ }
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = 440;
+      gain.gain.value = 0.04;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.18);
+      osc.onended = () => ctx.close();
+    } catch { /* sound needs a gesture on some phones */ }
+  }, [timer, remaining]);
+}
+
+function PhaseClock({ state, act }) {
+  const timer = state.timer;
+  const remaining = useRemaining(timer);
+  const showUp = Boolean(timer) && (timer.status === "expired" || remaining === 0);
+  useTimeUp(timer, remaining);
+  const gm = state.kind === "gm";
+  if (!timer && !gm) return null;
+  return (
+    <section className="panel mb-4 p-4" data-testid="phase-timer">
+      <p className="text-xs uppercase tracking-[0.18em] text-[#e6c27a]">Phase timer</p>
+      {timer ? (
+        <p className="serif text-4xl" data-testid={showUp ? "time-up" : "countdown"}>{showUp ? "Time's up" : formatMs(remaining)}</p>
+      ) : (
+        <p className="text-sm text-[#d9c7b6]">Off until you start it. It never changes the phase.</p>
+      )}
+      {gm && act && <TimerControls act={act} timer={timer} />}
+    </section>
+  );
+}
+
+function TimerControls({ act, timer }) {
+  const [minutes, setMinutes] = useState("4");
+  const running = timer?.status === "running";
+  const paused = timer?.status === "paused";
+  return (
+    <div className="mt-3 grid gap-2">
+      <div className="flex flex-wrap gap-2">
+        {[1, 2, 3, 5].map((value) => (
+          <button key={value} type="button" data-testid={`timer-${value}`} className="tap rounded-xl border border-[#c9a85a] px-3" onClick={() => act({ type: "timer-start", minutes: value })}>{value} min</button>
+        ))}
+      </div>
+      <form className="flex gap-2" onSubmit={(event) => { event.preventDefault(); act({ type: "timer-start", minutes: Number(minutes) }); }}>
+        <input data-testid="timer-custom" className="tap w-24 rounded-xl border border-[#4a342c] bg-[#1c1412] px-3" inputMode="numeric" min="1" max="180" value={minutes} onChange={(event) => setMinutes(event.target.value)} />
+        <button data-testid="timer-start-custom" className="tap rounded-xl bg-[#e6c27a] px-3 text-[#1a100e]">Start</button>
+      </form>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" data-testid="timer-pause" className="tap rounded-xl border border-[#4a342c] px-3" disabled={!running} onClick={() => act({ type: "timer-pause" })}>Pause</button>
+        <button type="button" data-testid="timer-resume" className="tap rounded-xl border border-[#4a342c] px-3" disabled={!paused} onClick={() => act({ type: "timer-resume" })}>Resume</button>
+        <button type="button" data-testid="timer-plus-30" className="tap rounded-xl border border-[#4a342c] px-3" disabled={!running && !paused} onClick={() => act({ type: "timer-add", seconds: 30 })}>+30s</button>
+        <button type="button" data-testid="timer-plus-60" className="tap rounded-xl border border-[#4a342c] px-3" disabled={!running && !paused} onClick={() => act({ type: "timer-add", seconds: 60 })}>+1 min</button>
+        <button type="button" data-testid="timer-stop" className="tap rounded-xl border border-[#e15b4c] px-3" disabled={!timer} onClick={() => act({ type: "timer-stop" })}>Stop</button>
+      </div>
+    </div>
+  );
+}
+
+function recapText(recap) {
+  const lines = ["Result: " + recap.result + ".", "", "Players"];
+  for (const player of recap.players) lines.push(player.name + " — " + player.roleName + " — " + player.alignment + (player.alive ? "" : " — dead") + ".");
+  lines.push("", "Deaths");
+  if (!recap.deaths.length) lines.push("Nobody died.");
+  for (const death of recap.deaths) lines.push(death.name + " died on " + death.when + " by " + death.how + ".");
+  lines.push("", "What happened");
+  for (const segment of recap.segments) {
+    lines.push("", segment.title);
+    for (const line of segment.lines) lines.push(line);
+  }
+  return lines.join("\n");
+}
+
+function Recap({ recap, gm = false }) {
+  const text = recapText(recap);
+  function download() {
+    const blob = new Blob([text], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "ashes-recap.txt";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+  return (
+    <section className="panel grid gap-4 p-4" data-testid="recap">
+      <div>
+        <p className="text-xs uppercase tracking-[0.18em] text-[#e6c27a]">Recap</p>
+        <h2 className="serif text-4xl">{recap.result}</h2>
+      </div>
+      {gm && (
+        <div className="flex gap-2">
+          <button type="button" data-testid="recap-copy" className="tap rounded-xl border border-[#e6c27a] px-3" onClick={() => navigator.clipboard?.writeText(text)}>Copy</button>
+          <button type="button" data-testid="recap-download" className="tap rounded-xl border border-[#e6c27a] px-3" onClick={download}>Download</button>
+        </div>
+      )}
+      <div>
+        <h3 className="serif text-2xl">Players</h3>
+        <ul className="mt-2 grid gap-1 text-sm">
+          {recap.players.map((player) => <li key={player.id}>{player.name} — {player.roleName} — {player.alignment}{player.alive ? "" : " — dead"}</li>)}
+        </ul>
+      </div>
+      <div>
+        <h3 className="serif text-2xl">Deaths</h3>
+        {recap.deaths.length === 0 && <p className="mt-2 text-sm">Nobody died.</p>}
+        <ul className="mt-2 grid gap-1 text-sm">
+          {recap.deaths.map((death) => <li key={death.name + death.when}>{death.name} died on {death.when} by {death.how}.</li>)}
+        </ul>
+      </div>
+      <div>
+        <h3 className="serif text-2xl">What happened</h3>
+        {recap.segments.length === 0 && <p className="mt-2 text-sm">No phases were recorded.</p>}
+        {recap.segments.map((segment) => (
+          <section key={segment.title} className="mt-3">
+            <h4 className="text-[#e6c27a]">{segment.title}</h4>
+            {segment.lines.map((line, index) => <p key={index} className="mt-1 text-sm">{line}</p>)}
+          </section>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -690,6 +849,9 @@ function PlayerScreen({ state, act, error, connected, onLeave }) {
           <button className="text-sm underline" onClick={onLeave}>Leave</button>
         </div>
       </header>
+      {state.phase === "ended" && state.recap ? <Recap recap={state.recap} /> : (
+      <>
+      {state.dealt && <PhaseClock state={state} />}
       {state.nightOfPeace && state.phase === "ashFall" && <p className="mb-3 text-sm text-[#e6c27a]" data-testid="night-of-peace">A night of peace. The inherited kill does not fall.</p>}
       <div className={`mb-4 grid gap-2 text-sm ${state.mindList ? "grid-cols-5" : "grid-cols-4"}`}>
         {(state.mindList ? ["role", "mind", "act", "chat", "notes"] : ["role", "act", "chat", "notes"]).map((id) => (
@@ -701,6 +863,8 @@ function PlayerScreen({ state, act, error, connected, onLeave }) {
       {tab === "act" && <ActPanel state={state} act={act} />}
       {tab === "chat" && <PlayerChat state={state} act={act} />}
       {tab === "notes" && <Notes you={you} act={act} />}
+      </>
+      )}
     </div>
   );
 }
