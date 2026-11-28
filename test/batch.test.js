@@ -271,8 +271,10 @@ test("Ashen Mind list, GM kill and mire notes, and no automatic ending", () => {
   assert.equal(ended.phase, "ended");
   assert.equal(ended.winner, "lumen");
   const mindEnded = viewFor(state, { kind: "player", playerId: byName("Mina").id, name: "Mina" }, extras);
-  assert.equal(linked(mindEnded, "Fern", "the-foresight-elder", "The Foresight Elder"), false);
-  assert.equal(linked(mindEnded, "Cora", "the-civic-luminary", "The Civic Luminary"), false);
+  assert.equal(linked(mindEnded.mindList, "Fern", "the-foresight-elder", "The Foresight Elder"), false);
+  assert.equal(linked(mindEnded.reveal, "Cora", "the-civic-luminary", "The Civic Luminary"), false);
+  assert.equal(mindEnded.recap.players.find((row) => row.name === "Fern").roleId, "the-foresight-elder");
+  assert.equal(mindEnded.recap.players.find((row) => row.name === "Cora").roleId, "the-civic-luminary");
 });
 
 test("new faction symbols, remnant portraits, and Ashen immunity to Ash and Mire Touched", () => {
@@ -315,4 +317,84 @@ test("new faction symbols, remnant portraits, and Ashen immunity to Ash and Mire
   assert.equal(state.players.find((p) => p.name === "Tor").mireTouched, false);
   assert.equal(state.players.find((p) => p.name === "Tor").poisonCount, 0);
   assert.match(state.log.map((line) => line.text).join("\n"), /Poison on Tor did not land: Ashen are immune to Mire Touched/);
+});
+
+test("the phase timer stays in sync and the recap appears only after End game", async () => {
+  const extras = { chats: [], statements: [], code: "TIME" };
+  let state = applyForcedDeal(blankState(), [
+    { name: "Tess", roleId: "the-ashen-tyrant" },
+    { name: "Mina", roleId: "the-ashen-mind" },
+    { name: "Vera", roleId: "voice-of-the-accord" },
+    { name: "Fern", roleId: "the-foresight-elder" },
+    { name: "Cora", roleId: "the-civic-luminary" },
+  ]);
+  state = { ...state, holdWin: true };
+  const id = (name) => state.players.find((player) => player.name === name).id;
+  const before = viewFor(state, { kind: "player", playerId: id("Mina"), name: "Mina" }, extras);
+  assert.equal(before.recap, undefined);
+  assert.equal(JSON.stringify(before).includes('"recap"'), false);
+  state = reduce(state, { type: "timer-start", minutes: 1 });
+  const phase = state.phase;
+  const gmTimer = viewFor(state, { kind: "gm", name: "Caden" }, extras).timer;
+  const playerTimer = viewFor(state, { kind: "player", playerId: id("Mina"), name: "Mina" }, extras).timer;
+  assert.equal(gmTimer.status, "running");
+  assert.ok(gmTimer.remainingMs > 50000);
+  assert.ok(Math.abs(gmTimer.remainingMs - playerTimer.remainingMs) < 2000);
+  state = reduce(state, { type: "timer-pause" });
+  const paused = viewFor(state, { kind: "player", playerId: id("Vera"), name: "Vera" }, extras);
+  assert.equal(paused.phase, phase);
+  assert.equal(paused.timer.status, "paused");
+  assert.equal(paused.recap, undefined);
+  const added = reduce(state, { type: "timer-add", seconds: 30 });
+  assert.ok(viewFor(added, { kind: "gm", name: "Caden" }, extras).timer.remainingMs > paused.timer.remainingMs + 20000);
+  state = reduce(state, { type: "timer-stop" });
+  assert.equal(viewFor(state, { kind: "gm", name: "Caden" }, extras).timer, null);
+  state = reduce(state, { type: "timer-start", minutes: 1 / 120 });
+  await new Promise((resolve) => setTimeout(resolve, 700));
+  const expired = viewFor(state, { kind: "player", playerId: id("Mina"), name: "Mina" }, extras);
+  assert.equal(expired.timer.status, "expired");
+  assert.equal(expired.phase, phase);
+  assert.equal(state.winner || "", "");
+  state = reduce(state, { type: "gm-kill", playerId: id("Cora") });
+  const hidden = viewFor(state, { kind: "player", playerId: id("Mina"), name: "Mina" }, extras);
+  assert.equal(hidden.recap, undefined);
+  assert.equal(JSON.stringify(hidden).includes("GM kill"), false);
+  assert.equal(linked(hidden, "Cora", "the-civic-luminary", "The Civic Luminary"), false);
+  state = reduce(state, { type: "end-game", winner: "ashen", confirm: true });
+  const recap = viewFor(state, { kind: "player", playerId: id("Mina"), name: "Mina" }, extras).recap;
+  assert.equal(recap.result, "Ashen");
+  assert.equal(recap.players.find((row) => row.name === "Cora").roleName, "The Civic Luminary");
+  assert.equal(recap.players.find((row) => row.name === "Fern").roleId, "the-foresight-elder");
+  assert.ok(recap.deaths.some((row) => row.name === "Cora" && row.how === "GM kill"));
+  assert.ok(recap.segments.some((segment) => segment.lines.some((line) => line.includes("Cora died"))));
+
+  const { port, close } = await start(0);
+  try {
+    const { gm, players } = await seated(port, ["Ava", "Ben", "Cara", "Dee", "Eli"]);
+    const started = await gm({ type: "timer-start", minutes: 2 });
+    assert.equal(started.status, 200, started.data.error || "");
+    assert.equal(started.data.state.phase, "ashFall");
+    assert.equal(started.data.state.recap, undefined);
+    const seat = await call(port, "/api/state", { token: players[0].token });
+    assert.equal(seat.data.recap, undefined);
+    assert.equal(JSON.stringify(seat.data).includes('"recap"'), false);
+    assert.equal(seat.data.timer.status, "running");
+    assert.ok(Math.abs(seat.data.timer.remainingMs - started.data.state.timer.remainingMs) < 3000);
+    const pausedLive = await gm({ type: "timer-pause" });
+    assert.equal(pausedLive.data.state.phase, "ashFall");
+    const moved = await gm({ type: "resolve" });
+    assert.equal(moved.status, 200, moved.data.error || "");
+    assert.equal(moved.data.state.timer, null);
+    assert.notEqual(moved.data.state.phase, "ended");
+    const denied = await call(port, "/api/action", { token: players[0].token, body: { type: "timer-start", minutes: 1 } });
+    assert.equal(denied.status, 400);
+    const ended = await gm({ type: "end-game", winner: "lumen", confirm: true });
+    assert.equal(ended.data.state.recap.result, "Lumen");
+    assert.ok(ended.data.state.recap.players.some((row) => row.roleName === "The Ashen Tyrant"));
+    const playerEnded = await call(port, "/api/state", { token: players[1].token });
+    assert.equal(playerEnded.data.recap.players.length, 5);
+    assert.ok(playerEnded.data.recap.players.every((row) => row.roleId && row.alignment));
+  } finally {
+    await close();
+  }
 });

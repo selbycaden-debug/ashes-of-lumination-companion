@@ -246,6 +246,23 @@ export function start(port = 0) {
     throw new Error("Unknown route.");
   }
 
+  const timerPulse = setInterval(() => {
+    const now = Date.now();
+    for (const game of Object.values(db.games)) {
+      const timer = game.engine?.phaseTimer;
+      if (!timer || timer.status !== "running" || !timer.endsAt || now < timer.endsAt) continue;
+      game.engine = {
+        ...game.engine,
+        phaseTimer: timer.phase !== game.engine.phase || Number(timer.round) !== Number(game.engine.round)
+          ? null
+          : { ...timer, status: "expired", endsAt: null, remainingMs: 0 },
+      };
+      persist();
+      broadcast(game);
+    }
+  }, 400);
+  timerPulse.unref();
+
   const wss = new WebSocketServer({ server, path: "/ws" });
   wss.on("connection", (ws, req) => {
     const url = new URL(req.url, "http://localhost");
@@ -268,6 +285,7 @@ export function start(port = 0) {
         server,
         port: address.port,
         close() {
+          clearInterval(timerPulse);
           wss.close();
           return new Promise((done) => server.close(() => done()));
         },

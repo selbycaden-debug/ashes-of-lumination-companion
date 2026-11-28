@@ -167,6 +167,9 @@ test("GM kill and mire notes stay private, and the table does not end itself", a
   const tyrant = gm.getByTestId("player-row").filter({ hasText: "The Ashen Tyrant" });
   const tyrantName = (await tyrant.locator("h3").innerText()).trim();
   const seat = players[NAMES.indexOf(tyrantName)];
+  await gm.getByTestId("timer-5").click();
+  await expect(seat.getByTestId("countdown")).toHaveText(/\d+:\d\d/);
+  await seat.screenshot({ path: "/opt/cursor/artifacts/player-timer.png", fullPage: true });
   await expect(tyrant.getByTestId("set-ash")).toBeDisabled();
   await expect(tyrant.getByTestId("gm-mire")).toBeDisabled();
   await expect(tyrant.getByTestId("set-ash")).toHaveAttribute("title", "Ashen are immune");
@@ -210,6 +213,8 @@ test("GM kill and mire notes stay private, and the table does not end itself", a
   await gm.getByTestId("end-confirm").check();
   await gm.getByTestId("end-submit").click();
   await expect(gm.locator("h1")).toContainText("Ended");
-  await expect(gm.getByTestId("reveal")).toContainText("The Ashen Tyrant");
-  await expect(seat.getByTestId("reveal")).toBeVisible();
+  await expect(gm.getByTestId("recap")).toContainText("The Ashen Tyrant");
+  await expect(seat.getByTestId("recap")).toContainText("The Ashen Tyrant");
+  await expect(gm.getByTestId("recap-download")).toBeVisible();
+  await seat.screenshot({ path: "/opt/cursor/artifacts/player-recap.png", fullPage: true });
 });
